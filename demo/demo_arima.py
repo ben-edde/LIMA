@@ -5,7 +5,7 @@ import influxdb_client
 from influxdb_client.client.write_api import SYNCHRONOUS
 
 
-def write_InfluxDB(url, token, org, bucket, measurement, df):
+def write_InfluxDB(df, bucket='default_bucket', measurement='brent'):
     client = influxdb_client.InfluxDBClient.from_config_file("config.ini")
     write_api = client.write_api(write_options=SYNCHRONOUS)
     write_api.write(bucket, record=df, data_frame_measurement_name=measurement)
@@ -31,8 +31,8 @@ def main():
                        end=price_oil.shape[0] + len(new_dates)))
     pred['date'] = new_dates
     pred.set_index('date', inplace=True)
-    pred.columns = ['pred']
-    #write_InfluxDB(pred)
+    pred.columns = ['pred_arima']
+    write_InfluxDB(pred)
 
 
 if __name__ == "__main__":
