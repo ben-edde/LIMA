@@ -6,9 +6,9 @@
 - [x] sentiment indicator
   - [x] TextBlob
   - [x] cumulative decay
-- [ ] topic indicator
-  - [ ] embedding
-  - [ ] SeaNMF
+- [x] topic indicator
+  - [x] embedding
+  - [x] SeaNMF
 - [x] integration of multiple series
 - [ ] VAR and lag order selection
 - [x] data preprocessing
