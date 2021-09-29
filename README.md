@@ -3,13 +3,13 @@
 ## Components
 
 * data cleaning
-  * `->` load raw textual data
+  * `->` load raw textual and price data
   * remove stop words
   * remove special char
   * lemmatization/stemming
-  * `<-` DataFrame of documents with columns: (timestamp, text)
-* feature engineering
-  * `->` DataFrame of documents
+  * `<-` DataFrame of documents with columns: (timestamp, text), DataFrame of price data
+* feature extraction
+  * `->` DataFrame of documents 
   * processing
   * `<-` DataFrame of feature series: (timestamp, features) //may be shifted
 * feature selection
