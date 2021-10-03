@@ -39,3 +39,4 @@
 * [Tensorflow-Project-Template](https://github.com/MrGemy95/Tensorflow-Project-Template): update project structure before scaling up
 * export evaluation result for visualization (perhaps using R)
 * consider setup env on cloud
+* https://github.com/IDSIA/sacred
