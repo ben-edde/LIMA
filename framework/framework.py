@@ -58,7 +58,7 @@ def record(df, description):
     df.to_csv(f"EvaluationResult_{ts}.csv", index=False)
 
 
-def run_experiment(ratio, feature_method, model_method, description):
+def run_experiment(ratio, feature_method, model_method, description,exp):
     config = load_config(cfg_filename="setup.cfg")
     # change_in_cleaning = config["cleaning"].getboolean("change")
     # change_in_extract = config["extract"].getboolean("change")
@@ -76,8 +76,9 @@ def run_experiment(ratio, feature_method, model_method, description):
                               right_index=True)
     train_x, train_y, test_x, test_y = split_train_test_data(df_xy)
     model = model_method()
-    print(train_x.shape, train_y.shape)
     model.fit(train_x, train_y)
     pred_y = model.predict(test_x)
     df_evaluation_result = evaluate(test_y, pred_y)
-    record(df_evaluation_result, description)
+    #record(df_evaluation_result, description)
+    exp.log_scalar("evaluation results", df_evaluation_result.to_dict())
+    
