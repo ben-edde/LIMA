@@ -1,16 +1,10 @@
-# Import libraries
 import pandas as pd
 import pickle
 import numpy as np
-import matplotlib.pyplot as plt
-import time
-import string
 from openie import StanfordOpenIE
 from gensim.models import Word2Vec
 
-df_news = pd.read_csv("RedditNews.csv")
-
-df_news = df_news[:5000]
+df_news = pd.read_csv("RedditNews_filtered.csv")
 
 openie_client = StanfordOpenIE()
 
@@ -24,7 +18,7 @@ for idx, row in df_news.iterrows():
 
 df_events = pd.DataFrame(event_tuples)
 
-#df_events.to_csv("event_tuples_sample.csv", index=False)
+df_events.to_csv("event_tuples(RedditNews_filtered).csv", index=False)
 
 event_subject = df_events.subject.apply(lambda x: x.split(" "))
 event_relation = df_events.relation.apply(lambda x: x.split(" "))
