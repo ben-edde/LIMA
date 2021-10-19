@@ -62,5 +62,5 @@ df_events.subject = df_events.subject.apply(lambda x: w2v_model.wv[x])
 df_events.relation = df_events.relation.apply(lambda x: w2v_model.wv[x])
 df_events.object = df_events.object.apply(lambda x: w2v_model.wv[x])
 
-df_events.iloc[0]["relation"].shape
+df_events.to_pickle("event_tuple_w2v.pkl")
  
