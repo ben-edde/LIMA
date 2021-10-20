@@ -23,7 +23,7 @@ df_price.Date=pd.to_datetime(df_price.Date)
 df_price.set_index("Date",inplace=True)
 df_daily_event.Date=pd.to_datetime(df_daily_event.Date)
 df_daily_event.set_index("Date",inplace=True)
-good_keys = df_price.index.intersection(df_daily_event.Date)
+good_keys = df_price.index.intersection(df_daily_event.index)
 df_price=df_price.loc[good_keys]
 df_daily_event=df_daily_event.loc[good_keys]
 
