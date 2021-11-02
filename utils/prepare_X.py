@@ -15,7 +15,7 @@ def prepare_X(file_name: str, feature_name: str, lag: int):
     base_shift = -3
     for i in range(1, lag + 1):
         to_shift = base_shift - i
-        df[f"{feature_name}_t{i}"] = df.shift(to_shift)[feature_name]
+        df[f"{feature_name}_t-{i}"] = df.shift(to_shift)[feature_name]
     df.dropna(inplace=True)
     df.drop(feature_name, inplace=True, axis=1)
     df.to_csv(f"X_{feature_name}_t-1_t-{lag}.csv", index=False)
