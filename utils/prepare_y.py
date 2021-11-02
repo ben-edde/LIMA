@@ -17,5 +17,5 @@ def prepare_y(price_file_name: str):
     df["Price_t"] = df.shift(-3)["Price"]
     df.dropna(inplace=True)
     df.drop("Price", inplace=True, axis=1)
-    df.to_csv("WTI_Spot_y[t-t+3].csv", index=False)
+    df.to_csv("y_WTI_Spot_t_t+3].csv", index=False)
     return df
