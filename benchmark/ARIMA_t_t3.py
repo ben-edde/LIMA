@@ -67,7 +67,19 @@ def run_arima(df_price, p, d, q, P, D, Q, s):
     })
     evaluation_result = pd.concat(
         [df_order, metric_t, metric_t1, metric_t2, metric_t3], axis=1)
-
+    
+    exp.log_scalar(f"(({p},{d},{q}),({P},{D},{Q},{s}))_rmse_0: ",float(metric_t["rmse_0"]))
+    exp.log_scalar(f"(({p},{d},{q}),({P},{D},{Q},{s}))_mae_0: ",float(metric_t["mae_0"]))
+    exp.log_scalar(f"(({p},{d},{q}),({P},{D},{Q},{s}))_mape_0: ",float(metric_t["mape_0"]))
+    exp.log_scalar(f"(({p},{d},{q}),({P},{D},{Q},{s}))_rmse_1: ",float(metric_t1["rmse_1"]))
+    exp.log_scalar(f"(({p},{d},{q}),({P},{D},{Q},{s}))_mae_1: ",float(metric_t1["mae_1"]))
+    exp.log_scalar(f"(({p},{d},{q}),({P},{D},{Q},{s}))_mape_1: ",float(metric_t1["mape_1"]))
+    exp.log_scalar(f"(({p},{d},{q}),({P},{D},{Q},{s}))_rmse_2: ",float(metric_t2["rmse_2"]))
+    exp.log_scalar(f"(({p},{d},{q}),({P},{D},{Q},{s}))_mae_2: ",float(metric_t2["mae_2"]))
+    exp.log_scalar(f"(({p},{d},{q}),({P},{D},{Q},{s}))_mape_2: ",float(metric_t2["mape_2"]))
+    exp.log_scalar(f"(({p},{d},{q}),({P},{D},{Q},{s}))_rmse_3: ",float(metric_t3["rmse_3"]))
+    exp.log_scalar(f"(({p},{d},{q}),({P},{D},{Q},{s}))_mae_3: ",float(metric_t3["mae_3"]))
+    exp.log_scalar(f"(({p},{d},{q}),({P},{D},{Q},{s}))_mape_3: ",float(metric_t3["mape_3"]))
     return evaluation_result
 
 
@@ -89,14 +101,20 @@ def main():
         "rmse_1", "mae_1", "mape_1", "rmse_2", "mae_2", "mape_2", "rmse_3",
         "mae_3", "mape_3"
     ])
-    for p in range(6):
-        for d in range(4):
-            for q in range(6):
-                for P in range(6):
-                    for D in range(4):
-                        for Q in range(6):
-                            for s in [3, 6, 9, 12]:
-                                result = run_arima(df_price, p, d, q, P, D, Q,
-                                                   s)
-                                df_result = df_result.append(result)
+    try:
+        for p in range(1,6):
+            for d in range(4):
+                for q in range(1,6):
+                    for P in range(1,6):
+                        for D in range(4):
+                            for Q in range(1,6):
+                                for s in [3, 6, 9, 12]:
+                                    try:
+                                        result = run_arima(df_price, p, d, q, P, D, Q,
+                                                        s)
+                                        df_result = df_result.append(result)
+                                    except Exception as e:
+                                        print(f"FOOBAR: {e}")
+    except Exception as e:
+        print(f"FOOBAR: {e}")
     df_result.to_csv("ARIMA_result.csv", index=False)
