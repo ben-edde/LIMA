@@ -27,14 +27,12 @@ def evaluate(model, X, y, cv):
     mae = -cv_results["test_neg_mean_absolute_error"]
     rmse = -cv_results["test_neg_root_mean_squared_error"]
     mape = -cv_results["test_neg_mean_absolute_percentage_error"]
-    print(f"Mean Absolute Error:     {mae.mean():.3f} +/- {mae.std():.3f}\n"
-          f"Root Mean Squared Error: {rmse.mean():.3f} +/- {rmse.std():.3f}")
     k = cv.get_n_splits()
     print(f"""
     Forecast Error ({k}-fold cross-validated performance):
     {model.__class__.__name__}:
-    MAE = {mae.mean():.3f}
-    RMSE = {rmse.mean():.3f}
-    MAPE = {mape.mean():.3f}
+    MAE = {mae.mean():.3f} +/- {mae.std():.3f}
+    RMSE = {rmse.mean():.3f} +/- {rmse.std():.3f}
+    MAPE = {mape.mean():.3f} +/- {mape.std():.3f}
     """)
     return cv_results
