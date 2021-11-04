@@ -2,7 +2,7 @@ import pandas as pd
 from textblob import TextBlob
 from sklearn.preprocessing import MinMaxScaler
 import numpy as np
-from sklearn.model_selection import cross_validate, RepeatedKFold
+from sklearn.model_selection import cross_validate, RepeatedKFold,TimeSeriesSplit
 from sklearn.linear_model import Lasso
 from sklearn.svm import SVR
 from sacred import Experiment
@@ -75,7 +75,28 @@ def ten_fold(model, X, y):
                             ],
                             cv=cv,
                             n_jobs=-1)
-    print(f"""Test error (cross-validated performance)
+    print(f"""Test error (10 fold cross-validated performance)
+    {model.__class__.__name__}:
+    MAE = {-scores["test_neg_mean_absolute_error"].mean():.3f}
+    RMSE = {-scores["test_neg_root_mean_squared_error"].mean():.3f}
+    MAPE = {-scores["test_neg_mean_absolute_percentage_error"].mean():.3f}
+    """)
+    return scores
+
+@exp.capture
+def TS_ten_fold(model, X, y):
+    cv = TimeSeriesSplit(10,test_size=3)
+    scores = cross_validate(model,
+                            X,
+                            y,
+                            scoring=[
+                                'neg_mean_absolute_error',
+                                'neg_root_mean_squared_error',
+                                'neg_mean_absolute_percentage_error'
+                            ],
+                            cv=cv,
+                            n_jobs=-1)
+    print(f"""Test error (TimeSeries 10 fold cross-validated performance)
     {model.__class__.__name__}:
     MAE = {-scores["test_neg_mean_absolute_error"].mean():.3f}
     RMSE = {-scores["test_neg_root_mean_squared_error"].mean():.3f}
@@ -86,11 +107,11 @@ def ten_fold(model, X, y):
 
 @exp.automain
 def main():
-    df_news = pd.read_csv("RedditNews_filtered.csv")
+    df_news = pd.read_csv("RedditNews_2008-06-09_2016-07-01.csv")
     df_senti = find_sentiment(df_news)
     df_X = prepare_X(df_senti, "Polarity", 5)
 
-    df_price = pd.read_csv("WTI_Spot.csv")
+    df_price = pd.read_csv("WTI_Spot_2008-06-09_2016-07-01.csv")
     df_price.Date = pd.to_datetime(df_price.Date)
     df_y = prepare_y(df_price)
     df_Xy = df_X.merge(df_y, left_index=True, right_index=True)
@@ -106,13 +127,24 @@ def main():
     result = ten_fold(model, X, y)
     [
         exp.log_scalar(f"{model.__class__.__name__} ten-fold({each})",
-                       result[each].mean()) for each in result
+                       abs(result[each].mean())) for each in result
     ]
+    result = TS_ten_fold(model, X, y)
+    [
+        exp.log_scalar(f"{model.__class__.__name__} TS ten-fold({each})",
+                       abs(result[each].mean())) for each in result
+    ]
+
     model = SVR(kernel='rbf', C=1e3, gamma=0.1)
     result = one_fold(model, X, y, 0.7)
     exp.log_scalar("SVR one-fold: ", result)
     result = ten_fold(model, X, y)
     [
         exp.log_scalar(f"{model.__class__.__name__} ten-fold({each})",
-                       result[each].mean()) for each in result
+                       abs(result[each].mean())) for each in result
+    ]
+    result = TS_ten_fold(model, X, y)
+    [
+        exp.log_scalar(f"{model.__class__.__name__} TS ten-fold({each})",
+                       abs(result[each].mean())) for each in result
     ]
