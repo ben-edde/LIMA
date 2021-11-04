@@ -40,3 +40,13 @@
 * export evaluation result for visualization (perhaps using R)
 * consider setup env on cloud
 * https://github.com/IDSIA/sacred
+
+## Practice
+
+* cp evaluation functions in `framework/Evaluation.py` for each experiment to avoid import problem
+* build a pipeline
+  * loading and preprocessing
+  * feature extraction
+  * feature selection
+  * modeling building
+* then fit the entire pipeline as a model into `evaluate(model, X, y, cv)`
