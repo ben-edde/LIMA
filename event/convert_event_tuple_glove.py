@@ -28,11 +28,11 @@ def get_glove(word):
             return None
 
 
-df_event_price.dropna(inplace=True)
 
 df_event_price.subject = df_event_price.subject.apply(lambda x: get_glove(x))
 df_event_price.relation = df_event_price.relation.apply(lambda x: get_glove(x))
 df_event_price.object = df_event_price.object.apply(lambda x: get_glove(x))
+df_event_price.dropna(inplace=True)
 
 df_event_price["event"] = df_event_price.apply(
     lambda x: np.array(x[1].tolist() + x[2].tolist() + x[3].tolist()), axis=1)
