@@ -1,14 +1,7 @@
+import string
 import fasttext
 import pandas as pd
 import numpy as np
-from openie import StanfordOpenIE
-from gensim.models import Word2Vec
-from sklearn.model_selection import cross_validate, RepeatedKFold
-from sklearn.linear_model import Lasso
-from gensim.models import KeyedVectors
-from gensim.scripts.glove2word2vec import glove2word2vec
-
-import string
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
