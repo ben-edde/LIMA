@@ -1,16 +1,16 @@
 from sklearn.model_selection import cross_validate, RepeatedKFold, TimeSeriesSplit
 
 
-def get_TS_cv(k=10, horizon=3):
+def get_TS_cv(k=10, horizon=0):
     return TimeSeriesSplit(
         n_splits=k,
-        gap=0,
-        test_size=horizon,
+        gap=horizon-1,
+        test_size=1,
     )
 
-
-def get_random_cv(k=10):
-    return RepeatedKFold(n_splits=k, random_state=42)
+# does not make sense to future data to predict past: https://medium.com/@soumyachess1496/cross-validation-in-time-series-566ae4981ce4
+# def get_random_cv(k=10):
+#     return RepeatedKFold(n_splits=k, random_state=42)
 
 
 def evaluate(model, X, y, cv):
