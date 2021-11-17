@@ -61,7 +61,7 @@ df_news = pd.read_csv(f"{HOME}/embedding/RedditNews_2008-06-09_2016-07-01.csv")
 from gensim.models import KeyedVectors
 from nltk.stem.porter import PorterStemmer
 
-glove_file = f'{HOME}/embedding/glove/gensim_glove.6B.100d.txt'
+glove_file = f'{HOME}/embedding/glove/gensim_glove.6B.300d.txt'
 model = KeyedVectors.load_word2vec_format(glove_file, binary=False)
 porter = PorterStemmer()
 
@@ -87,4 +87,4 @@ df_news_price.dropna(inplace=True)
 
 df_news_price = df_news_price[["Date", "News_glove", "Price"]]
 df_news_price.to_pickle(
-    "WTI_Spot_n_RedditNews_2008-06-09_2016-07-01_glove.pkl")
+    "WTI_Spot_n_RedditNews_2008-06-09_2016-07-01_glove_300d.pkl")

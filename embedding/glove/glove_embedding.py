@@ -90,27 +90,27 @@ def main():
     df_result = pd.DataFrame(
         columns=['h', 'mae', 'rmse', 'mape', 'descriptions'])
     df_news_price = pd.read_pickle(
-        f"{HOME}/embedding/glove/WTI_Spot_n_RedditNews_2008-06-09_2016-07-01_glove.pkl"
+        f"{HOME}/embedding/glove/WTI_Spot_n_RedditNews_2008-06-09_2016-07-01_glove_300d.pkl"
     )
     df_news_price = df_news_price[::-1]
     X = np.array(df_news_price.News_glove.to_numpy().reshape(-1).tolist())
     y = df_news_price.Price.to_numpy().reshape(-1)
     for h in range(4):
         result = evaluate(LinearSVR(), X, y, h=h)
-        result["descriptions"] = "glove SVR"
+        result["descriptions"] = "glove 300d SVR"
         df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
     for h in range(4):
         result = evaluate(Ridge(), X, y, h=h)
-        result["descriptions"] = "glove Ridge"
+        result["descriptions"] = "glove 300d Ridge"
         df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
     for h in range(4):
         result = evaluate(SGDRegressor(), X, y, h=h)
-        result["descriptions"] = "glove SGDRegressor"
+        result["descriptions"] = "glove 300d SGDRegressor"
         df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
 
     df_result["time"] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     df_result = df_result[['time', 'descriptions', 'h', 'mae', 'rmse', 'mape']]
-    df_result.to_csv(f"{HOME}/embedding/glove/results.csv",
+    df_result.to_csv(f"{HOME}/results/results.csv",
                      mode="a",
                      index=False,
                      header=False)
