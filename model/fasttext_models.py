@@ -68,8 +68,6 @@ def main():
 
     res = evaluate(model=DecisionTreeRegressor(), X=X, y=y, cv=ts_cv)
 
-    # res = evaluate(model=KernelRidge(), X=X, y=y, cv=ts_cv)
-
     res = evaluate(model=Ridge(), X=X, y=y, cv=ts_cv)
 
     res = evaluate(model=BayesianRidge(), X=X, y=y, cv=ts_cv)

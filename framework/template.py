@@ -1,11 +1,12 @@
-"""
-Evaluation functions and logging config. To be copied to experiment file instead of being imported to avoid import problem.
-"""
+import datetime
 import logging
 import os
+import numpy as np
 import pandas as pd
-from sklearn.model_selection import cross_validate, TimeSeriesSplit
-from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, mean_squared_error
+from sklearn.metrics import (mean_absolute_error,
+                             mean_absolute_percentage_error,
+                             mean_squared_error)
+from sklearn.model_selection import TimeSeriesSplit, cross_validate
 
 logging.basicConfig(
     filename=os.environ["PublicSeaLogPath"],
@@ -13,6 +14,7 @@ logging.basicConfig(
     format=
     '%(asctime)s %(name)s %(filename)s %(funcName)s %(levelname)s %(message)s',
     level=logging.DEBUG)
+
 
 def evaluate(model, X, y, h):
     def get_TS_cv(k=10, horizon=0):
@@ -35,6 +37,7 @@ def evaluate(model, X, y, h):
             gap=0,
             test_size=horizon,
         )
+
     try:
         cv_results = cross_validate(model,
                                     X,
@@ -62,32 +65,32 @@ def evaluate(model, X, y, h):
         """
         print(msg)
         logging.info(msg)
-        evaluation_result={'h':h,'mae':[mae.mean()],'rmse':[rmse.mean()],'mape':[mape.mean()],'descriptions':msg}
+        evaluation_result = {
+            'h': h,
+            'mae': [mae.mean()],
+            'rmse': [rmse.mean()],
+            'mape': [mape.mean()],
+            'descriptions': [msg]
+        }
         return evaluation_result
     except Exception as e:
         logging.exception("EXCEPTION: %s", e, exc_info=True)
 
 
-def evaluate_series(y_true, y_pred, horizon):
-    """
-    Some models (like ARIMA) may not support cross_validate(), compare the forecasting result directly
-    Args:
-        y_true: y of test set
-        y_pred: y of prediction
-        horizon: forecast horizon
-
-    Returns:
-        DataFrame: single row DF with 3 metrics wrt horizon
-    """
-    # RMSE
-    rmse = mean_squared_error(y_true, y_pred, squared=False)
-    # MAE
-    mae = mean_absolute_error(y_true, y_pred)
-    # MAPE
-    mape = mean_absolute_percentage_error(y_true, y_pred)
-    evaluation_result={'h':horizon,'mae':[mae],'rmse':[rmse],'mape':[mape],'descriptions':""}
-    return evaluation_result
-
-# does not make sense to future data to predict past: https://medium.com/@soumyachess1496/cross-validation-in-time-series-566ae4981ce4
-# def get_random_cv(k=10):
-#     return RepeatedKFold(n_splits=k, random_state=42)
+# def main():
+    # HOME = os.environ['LIMA_HOME']
+    # df_result = pd.DataFrame(
+    #     columns=['h', 'mae', 'rmse', 'mape', 'descriptions'])
+    # df_Xy=df_Xy[::-1]
+    # X = np.array(df_Xy.X.to_numpy().reshape(-1).tolist())
+    # y = df_Xy.y.to_numpy().reshape(-1)
+    # for h in range(4):
+    #     result = evaluate(model, X, y, h=h)
+    #     result["descriptions"] = ""
+    #     df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
+    # df_result["time"] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    # df_result = df_result[['time', 'descriptions', 'h', 'mae', 'rmse', 'mape']]
+    # df_result.to_csv(f"{HOME}/results/results.csv",
+    #                  mode="a",
+    #                  index=False,
+    #                  header=False)
