@@ -7,10 +7,12 @@ from sklearn.metrics import (mean_absolute_error,
                              mean_absolute_percentage_error,
                              mean_squared_error)
 from sklearn.model_selection import TimeSeriesSplit, cross_validate
+from sklearn.svm import LinearSVR
+from sklearn.linear_model import Ridge, SGDRegressor
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
-exp = Experiment('exp')
+exp = Experiment('GloVe_embedding')
 exp.observers.append(FileStorageObserver('runs'))
 
 logging.basicConfig(
@@ -44,7 +46,7 @@ def evaluate(model, X, y, h):
         )
 
     try:
-        cv=get_TS_cv(horizon=h)
+        cv = get_TS_cv(horizon=h)
         cv_results = cross_validate(model,
                                     X,
                                     y,
@@ -82,22 +84,33 @@ def evaluate(model, X, y, h):
     except Exception as e:
         logging.exception("EXCEPTION: %s", e, exc_info=True)
 
+@exp.automain
+def main():
+    HOME = os.environ['LIMA_HOME']
+    df_result = pd.DataFrame(
+        columns=['h', 'mae', 'rmse', 'mape', 'descriptions'])
+    df_news_price = pd.read_pickle(
+        f"{HOME}/embedding/glove/WTI_Spot_n_RedditNews_2008-06-09_2016-07-01_glove.pkl"
+    )
+    df_news_price = df_news_price[::-1]
+    X = np.array(df_news_price.News_glove.to_numpy().reshape(-1).tolist())
+    y = df_news_price.Price.to_numpy().reshape(-1)
+    for h in range(4):
+        result = evaluate(LinearSVR(), X, y, h=h)
+        result["descriptions"] = "glove SVR"
+        df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
+    for h in range(4):
+        result = evaluate(Ridge(), X, y, h=h)
+        result["descriptions"] = "glove Ridge"
+        df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
+    for h in range(4):
+        result = evaluate(SGDRegressor(), X, y, h=h)
+        result["descriptions"] = "glove SGDRegressor"
+        df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
 
-# @exp.automain
-# def main():
-    # HOME = os.environ['LIMA_HOME']
-    # df_result = pd.DataFrame(
-    #     columns=['h', 'mae', 'rmse', 'mape', 'descriptions'])
-    # df_Xy=df_Xy[::-1]
-    # X = np.array(df_Xy.X.to_numpy().reshape(-1).tolist())
-    # y = df_Xy.y.to_numpy().reshape(-1)
-    # for h in range(4):
-    #     result = evaluate(model, X, y, h=h)
-    #     result["descriptions"] = ""
-    #     df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
-    # df_result["time"] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
-    # df_result = df_result[['time', 'descriptions', 'h', 'mae', 'rmse', 'mape']]
-    # df_result.to_csv(f"{HOME}/results/results.csv",
-    #                  mode="a",
-    #                  index=False,
-    #                  header=False)
+    df_result["time"] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    df_result = df_result[['time', 'descriptions', 'h', 'mae', 'rmse', 'mape']]
+    df_result.to_csv(f"{HOME}/embedding/glove/results.csv",
+                     mode="a",
+                     index=False,
+                     header=False)

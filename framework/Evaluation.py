@@ -36,6 +36,7 @@ def evaluate(model, X, y, h):
             test_size=horizon,
         )
     try:
+        cv=get_TS_cv(horizon=h)
         cv_results = cross_validate(model,
                                     X,
                                     y,
@@ -44,7 +45,7 @@ def evaluate(model, X, y, h):
                                         'neg_root_mean_squared_error',
                                         'neg_mean_absolute_percentage_error'
                                     ],
-                                    cv=get_TS_cv(horizon=h),
+                                    cv=cv,
                                     n_jobs=-1)
         mae = -cv_results["test_neg_mean_absolute_error"]
         rmse = -cv_results["test_neg_root_mean_squared_error"]

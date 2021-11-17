@@ -61,7 +61,7 @@ df_news = pd.read_csv(f"{HOME}/embedding/RedditNews_2008-06-09_2016-07-01.csv")
 from gensim.models import KeyedVectors
 from nltk.stem.porter import PorterStemmer
 
-glove_file = f'{HOME}/embedding/gensim_glove.6B.100d.txt'
+glove_file = f'{HOME}/embedding/glove/gensim_glove.6B.100d.txt'
 model = KeyedVectors.load_word2vec_format(glove_file, binary=False)
 porter = PorterStemmer()
 
