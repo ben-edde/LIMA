@@ -3,10 +3,10 @@ import os
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import (TimeSeriesSplit, cross_validate)
-from sklearn.svm import SVR,LinearSVR
+from sklearn.svm import SVR, LinearSVR
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.kernel_ridge import KernelRidge
-from sklearn.linear_model import LinearRegression, ARDRegression, SGDRegressor, ElasticNet, Lars, Lasso, GammaRegressor, TweedieRegressor, PoissonRegressor, Lasso
+from sklearn.linear_model import LinearRegression, ARDRegression, SGDRegressor, ElasticNet, Lars, Lasso, GammaRegressor, TweedieRegressor, PoissonRegressor, Lasso, Ridge, BayesianRidge
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
@@ -19,6 +19,7 @@ logging.basicConfig(
     format='%(asctime)s,%(msecs)d %(name)s %(levelname)s %(message)s',
     datefmt='%H:%M:%S',
     level=logging.INFO)
+
 
 def get_TS_cv(k=10, horizon=3):
     return TimeSeriesSplit(
@@ -52,6 +53,7 @@ def evaluate(model, X, y, cv):
     """)
     return cv_results
 
+
 @exp.automain
 def main():
     df_news_price = pd.read_pickle(
@@ -66,7 +68,7 @@ def main():
 
     res = evaluate(model=DecisionTreeRegressor(), X=X, y=y, cv=ts_cv)
 
-    res = evaluate(model=KernelRidge(), X=X, y=y, cv=ts_cv)
+    # res = evaluate(model=KernelRidge(), X=X, y=y, cv=ts_cv)
 
     res = evaluate(model=Ridge(), X=X, y=y, cv=ts_cv)
 
