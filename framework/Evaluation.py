@@ -15,30 +15,30 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 
-def cross_evaluate(model, X, y, h):
-    def get_TS_cv(k=10, horizon=0):
+def ML_evaluate(model, X, y, h):
+    """
+    Evaluation function for ML model using k-fold cross validation. Splitting data into training set and test set without concern of forecast horizon.
+
+    Args:
+        model   : ML model
+        X       : shifted feature series wrt forecast horizon
+        y       : uniseries dependence variable
+        h (int) : no use, for documentation only
+    """
+    def get_TS_cv(k=10, test_size=None):
         """
-        2 ways to split:
-        * one testing point per horizon (each horizon is then independent)
-        * series of horizon (large horizon include smaller horizon: overlap)
-        Simply looking at single point error may not be good, as the performance should include a forecast on series. The overlapping should be kept.
-        For t=0, take single point
-        For t>=1, take series
+        ML models do not need to care about forecast horizon when splitting training and test set. Forecast horizon should be handled by feature preparation ([X_t-1,X_t-2...]). Actually repeated K-fold can also be used, but stick to TS split to align with TS_evaluate().
         """
-        if horizon == 0:
-            return TimeSeriesSplit(
-                n_splits=k,
-                gap=horizon - 1,
-                test_size=1,
-            )
         return TimeSeriesSplit(
             n_splits=k,
             gap=0,
-            test_size=horizon,
+            test_size=test_size,
         )
 
     try:
-        cv = get_TS_cv(horizon=h)
+        cv = get_TS_cv(
+            test_size=int(len(y) * 0.2)
+        )  # using 20% data as test set as suggested by https://otexts.com/fpp3/accuracy.html
         cv_results = cross_validate(model,
                                     X,
                                     y,
@@ -76,11 +76,23 @@ def cross_evaluate(model, X, y, h):
     except Exception as e:
         logging.exception("EXCEPTION: %s", e, exc_info=True)
 
+# TODO: logging
+def TS_evaluate(model, y, h):
+    """
+    Evaluation function for TS model using k-fold cross validation. Forecast horizon define size of test set.
 
-def holdout_evaluate(model, X, y, h):
+    Args:
+        model   : TS model, only take y
+        y       : uniseries dependence variable
+        h (int) : forecast horizon, determine num of out-sample forecast made by model, and the corresponding test set.
     """
-    Splitting dataset into 2 parts: first 2/3 as training set and remaining 1/3 as test set. test_X shift wrt forecast horizon.
-    """
+    def get_TS_cv(k=10, horizon=1):
+        return TimeSeriesSplit(
+            n_splits=k,
+            gap=0,
+            test_size=horizon,
+        )
+
     def evaluate_series(y_true, y_pred, horizon):
         """
         Some models (like ARIMA) may not support cross_validate(), compare the forecasting result directly
@@ -107,19 +119,20 @@ def holdout_evaluate(model, X, y, h):
         }
         return evaluation_result
 
-    train_size = int(len(X) * 2 / 3)
-    train_X = X[:train_size]
-    train_y = y[:train_size]
-    test_y = y[train_size:]
-    if h == 0:
-        test_X = X[train_size:]
-    else:
-        test_X = X[train_size - h:-h]
-    model.fit(train_X, train_y)
-    pred_y = model.predict(test_X)
-    return evaluate_series(test_y, pred_y, h)
+    cv = get_TS_cv(horizon=h)
+    df_result = pd.DataFrame(
+        columns=['h', 'mae', 'rmse', 'mape', 'descriptions'])
+    for train_idx, test_idx in cv.split(y):
+        train_y = y[train_idx]
+        test_y = y[test_idx]
+        model.fit(train_y)
+        pred_y = model.predict(h)
+        evaluation_result = evaluate_series(test_y, pred_y, h)
+        df_result = df_result.append(pd.DataFrame(evaluation_result),
+                                     ignore_index=True)
+    return df_result
 
 
-# does not make sense to future data to predict past: https://medium.com/@soumyachess1496/cross-validation-in-time-series-566ae4981ce4
+# does not make sense to future data to predict past for TS model: https://medium.com/@soumyachess1496/cross-validation-in-time-series-566ae4981ce4
 # def get_random_cv(k=10):
 #     return RepeatedKFold(n_splits=k, random_state=42)
