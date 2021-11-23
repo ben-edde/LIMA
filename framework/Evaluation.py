@@ -76,7 +76,7 @@ def ML_evaluate(model, X, y, h):
     except Exception as e:
         logging.exception("EXCEPTION: %s", e, exc_info=True)
 
-# TODO: logging
+
 def TS_evaluate(model, y, h):
     """
     Evaluation function for TS model using k-fold cross validation. Forecast horizon define size of test set.
@@ -110,27 +110,52 @@ def TS_evaluate(model, y, h):
         mae = mean_absolute_error(y_true, y_pred)
         # MAPE
         mape = mean_absolute_percentage_error(y_true, y_pred)
-        evaluation_result = {
+        forecast_error = {
             'h': horizon,
             'mae': [mae],
             'rmse': [rmse],
             'mape': [mape],
             'descriptions': ""
         }
-        return evaluation_result
+        return forecast_error
 
-    cv = get_TS_cv(horizon=h)
-    df_result = pd.DataFrame(
-        columns=['h', 'mae', 'rmse', 'mape', 'descriptions'])
-    for train_idx, test_idx in cv.split(y):
-        train_y = y[train_idx]
-        test_y = y[test_idx]
-        model.fit(train_y)
-        pred_y = model.predict(h)
-        evaluation_result = evaluate_series(test_y, pred_y, h)
-        df_result = df_result.append(pd.DataFrame(evaluation_result),
-                                     ignore_index=True)
-    return df_result
+    try:
+        cv = get_TS_cv(horizon=h)
+        df_forecast_error = pd.DataFrame(
+            columns=['h', 'mae', 'rmse', 'mape', 'descriptions'])
+        for train_idx, test_idx in cv.split(y):
+            train_y = y[train_idx]
+            test_y = y[test_idx]
+            model.fit(train_y)
+            pred_y = model.predict(h)
+            forecast_error = evaluate_series(test_y, pred_y, h)
+            df_forecast_error = df_forecast_error.append(
+                pd.DataFrame(forecast_error), ignore_index=True)
+        mae = df_forecast_error["mae"]
+        rmse = df_forecast_error["rmse"]
+        mape = df_forecast_error["mape"]
+        k = cv.get_n_splits()
+        msg = f"""
+        Forecast Error ({k}-fold cross-validation)
+        y: {y.shape}
+        h= {h}
+        Model: {model.__class__.__name__}
+        MAE = {mae.mean():.3f} +/- {mae.std():.3f}
+        RMSE = {rmse.mean():.3f} +/- {rmse.std():.3f}
+        MAPE = {mape.mean():.3f} +/- {mape.std():.3f}
+        """
+        print(msg)
+        logging.info(msg)
+        evaluation_result = {
+            'h': h,
+            'mae': [mae.mean()],
+            'rmse': [rmse.mean()],
+            'mape': [mape.mean()],
+            'descriptions': msg
+        }
+        return evaluation_result
+    except Exception as e:
+        logging.exception("EXCEPTION: %s", e, exc_info=True)
 
 
 # does not make sense to future data to predict past for TS model: https://medium.com/@soumyachess1496/cross-validation-in-time-series-566ae4981ce4
