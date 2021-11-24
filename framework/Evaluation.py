@@ -36,9 +36,7 @@ def ML_evaluate(model, X, y, h):
         )
 
     try:
-        cv = get_TS_cv(
-            test_size=int(len(y) * 0.2)
-        )  # using 20% data as test set as suggested by https://otexts.com/fpp3/accuracy.html
+        cv = get_TS_cv()
         cv_results = cross_validate(model,
                                     X,
                                     y,

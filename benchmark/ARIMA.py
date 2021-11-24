@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 import pandas as pd
@@ -5,7 +6,6 @@ import numpy as np
 import pmdarima as pm
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, mean_squared_error
 from sklearn.model_selection import TimeSeriesSplit
-from sklearn.preprocessing import MinMaxScaler
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
@@ -20,7 +20,7 @@ logging.basicConfig(
     level=logging.INFO)
 
 
-def TS_evaluate(model,y, h):
+def TS_evaluate(model, y, h):
     """
     Evaluation function for TS model using k-fold cross validation. Forecast horizon define size of test set.
 
@@ -68,10 +68,6 @@ def TS_evaluate(model,y, h):
         for train_idx, test_idx in cv.split(y):
             train_y = y[train_idx].reshape(-1, 1)
             test_y = y[test_idx].reshape(-1, 1)
-            scaler = MinMaxScaler()
-            scaler.fit(train_y)
-            train_y=scaler.transform(train_y)
-            test_y=scaler.transform(test_y)
             model.fit(train_y)
             pred_y = model.predict(h)
             forecast_error = evaluate_series(test_y, pred_y, h)
@@ -93,7 +89,8 @@ def TS_evaluate(model,y, h):
         print(msg)
         logging.info(msg)
         evaluation_result = {
-            'h': h,
+            'h':
+            h,
             'mae': [mae.mean()],
             'rmse': [rmse.mean()],
             'mape': [mape.mean()],
@@ -118,8 +115,13 @@ def main():
     df_price = df_price.iloc[::-1]
     df_price.reset_index(inplace=True, drop=True)
 
-    for h in range(1, 2):
-        model=pm.ARIMA(order=(2, 1, 3),seasonal_order=(1, 0, 1, 6))
-        result = TS_evaluate(model=model,y=df_price.Price.to_numpy(), h=h)
+    for h in range(1, 6):
+        model = pm.ARIMA(order=(2, 1, 3), seasonal_order=(1, 0, 1, 6))
+        result = TS_evaluate(model=model, y=df_price.Price.to_numpy(), h=h)
         df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
-    df_result.to_csv("arima_results.csv", mode="a", index=False, header=False)
+    df_result["time"] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    df_result = df_result[['time', 'descriptions', 'h', 'mae', 'rmse', 'mape']]
+    df_result.to_csv(f"{HOME}/results/experiment_results.csv",
+                     mode="a",
+                     index=False,
+                     header=False)

@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 import pandas as pd
@@ -5,7 +6,6 @@ import numpy as np
 from statsmodels.api import tsa
 from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, mean_squared_error
 from sklearn.model_selection import TimeSeriesSplit
-from sklearn.preprocessing import MinMaxScaler
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
@@ -68,12 +68,8 @@ def TS_evaluate(y, h):
         for train_idx, test_idx in cv.split(y):
             train_y = y[train_idx].reshape(-1, 1)
             test_y = y[test_idx].reshape(-1, 1)
-            scaler = MinMaxScaler()
-            scaler.fit(train_y)
-            train_y=scaler.transform(train_y)
-            test_y=scaler.transform(test_y)
-            model=tsa.UnobservedComponents(train_y, "rwalk")
-            fitted_model=model.fit()
+            model = tsa.UnobservedComponents(train_y, "rwalk")
+            fitted_model = model.fit()
             pred_y = fitted_model.forecast(h)
             forecast_error = evaluate_series(test_y, pred_y, h)
             df_forecast_error = df_forecast_error.append(
@@ -121,4 +117,9 @@ def main():
     for h in range(1, 6):
         result = TS_evaluate(y=df_price.Price.to_numpy(), h=h)
         df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
-    df_result.to_csv("RandomWalk_results.csv", mode="a", index=False, header=False)
+    df_result["time"] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    df_result = df_result[['time', 'descriptions', 'h', 'mae', 'rmse', 'mape']]
+    df_result.to_csv(f"{HOME}/results/experiment_results.csv",
+                     mode="a",
+                     index=False,
+                     header=False)

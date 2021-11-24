@@ -20,31 +20,28 @@ logging.basicConfig(
     '%(asctime)s %(name)s %(filename)s %(funcName)s %(levelname)s %(message)s',
     level=logging.DEBUG)
 
+def ML_evaluate(model, X, y, h):
+    """
+    Evaluation function for ML model using k-fold cross validation. Splitting data into training set and test set without concern of forecast horizon.
 
-def evaluate(model, X, y, h):
-    def get_TS_cv(k=10, horizon=0):
+    Args:
+        model   : ML model
+        X       : shifted feature series wrt forecast horizon
+        y       : uniseries dependence variable
+        h (int) : no use, for documentation only
+    """
+    def get_TS_cv(k=10, test_size=None):
         """
-        2 ways to split:
-        * one testing point per horizon (each horizon is then independent)
-        * series of horizon (large horizon include smaller horizon: overlap)
-        Simply looking at single point error may not be good, as the performance should include a forecast on series. The overlapping should be kept.
-        For t=0, take single point
-        For t>=1, take series
+        ML models do not need to care about forecast horizon when splitting training and test set. Forecast horizon should be handled by feature preparation ([X_t-1,X_t-2...]). Actually repeated K-fold can also be used, but stick to TS split to align with TS_evaluate().
         """
-        if horizon == 0:
-            return TimeSeriesSplit(
-                n_splits=k,
-                gap=horizon - 1,
-                test_size=1,
-            )
         return TimeSeriesSplit(
             n_splits=k,
             gap=0,
-            test_size=horizon,
+            test_size=test_size,
         )
 
     try:
-        cv=get_TS_cv(horizon=h)
+        cv = get_TS_cv()
         cv_results = cross_validate(model,
                                     X,
                                     y,
@@ -76,12 +73,11 @@ def evaluate(model, X, y, h):
             'mae': [mae.mean()],
             'rmse': [rmse.mean()],
             'mape': [mape.mean()],
-            'descriptions': [msg]
+            'descriptions': msg
         }
         return evaluation_result
     except Exception as e:
         logging.exception("EXCEPTION: %s", e, exc_info=True)
-
 
 # @exp.automain
 # def main():
@@ -91,7 +87,7 @@ def evaluate(model, X, y, h):
     # df_Xy=df_Xy[::-1]
     # X = np.array(df_Xy.X.to_numpy().reshape(-1).tolist())
     # y = df_Xy.y.to_numpy().reshape(-1)
-    # for h in range(4):
+    # for h in range(1,6):
     #     result = evaluate(model, X, y, h=h)
     #     result["descriptions"] = ""
     #     df_result = df_result.append(pd.DataFrame(result), ignore_index=True)

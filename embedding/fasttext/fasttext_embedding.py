@@ -23,30 +23,28 @@ logging.basicConfig(
     level=logging.DEBUG)
 
 
-def evaluate(model, X, y, h):
-    def get_TS_cv(k=10, horizon=0):
+def ML_evaluate(model, X, y, h):
+    """
+    Evaluation function for ML model using k-fold cross validation. Splitting data into training set and test set without concern of forecast horizon.
+
+    Args:
+        model   : ML model
+        X       : shifted feature series wrt forecast horizon
+        y       : uniseries dependence variable
+        h (int) : no use, for documentation only
+    """
+    def get_TS_cv(k=10, test_size=None):
         """
-        2 ways to split:
-        * one testing point per horizon (each horizon is then independent)
-        * series of horizon (large horizon include smaller horizon: overlap)
-        Simply looking at single point error may not be good, as the performance should include a forecast on series. The overlapping should be kept.
-        For t=0, take single point
-        For t>=1, take series
+        ML models do not need to care about forecast horizon when splitting training and test set. Forecast horizon should be handled by feature preparation ([X_t-1,X_t-2...]). Actually repeated K-fold can also be used, but stick to TS split to align with TS_evaluate().
         """
-        if horizon == 0:
-            return TimeSeriesSplit(
-                n_splits=k,
-                gap=horizon - 1,
-                test_size=1,
-            )
         return TimeSeriesSplit(
             n_splits=k,
             gap=0,
-            test_size=horizon,
+            test_size=test_size,
         )
 
     try:
-        cv = get_TS_cv(horizon=h)
+        cv = get_TS_cv()
         cv_results = cross_validate(model,
                                     X,
                                     y,
@@ -97,22 +95,22 @@ def main():
     X = np.array(df_news_price.News_fasttext.to_numpy().reshape(-1).tolist())
     y = df_news_price.Price.to_numpy().reshape(-1)
 
-    for h in range(4):
-        result = evaluate(LinearSVR(), X, y, h=h)
+    for h in range(1, 6):
+        result = ML_evaluate(LinearSVR(), X, y, h=h)
         result["descriptions"] = "fasttext SVR"
         df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
-    for h in range(4):
-        result = evaluate(Ridge(), X, y, h=h)
+    for h in range(1, 6):
+        result = ML_evaluate(Ridge(), X, y, h=h)
         result["descriptions"] = "fasttext Ridge"
         df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
-    for h in range(4):
-        result = evaluate(SGDRegressor(), X, y, h=h)
+    for h in range(1, 6):
+        result = ML_evaluate(SGDRegressor(), X, y, h=h)
         result["descriptions"] = "fasttext SGDRegressor"
         df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
 
     df_result["time"] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     df_result = df_result[['time', 'descriptions', 'h', 'mae', 'rmse', 'mape']]
-    df_result.to_csv(f"{HOME}/results/results.csv",
+    df_result.to_csv(f"{HOME}/results/experiment_results.csv",
                      mode="a",
                      index=False,
                      header=False)
