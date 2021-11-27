@@ -76,7 +76,7 @@ def ML_evaluate(model, X, y, h):
             'mae': [mae.mean()],
             'rmse': [rmse.mean()],
             'mape': [mape.mean()],
-            'descriptions': msg
+            'descriptions': [msg]
         }
         return evaluation_result
     except Exception as e:
@@ -123,8 +123,7 @@ def get_names():
 #     # use prepared features for make forecast for each horizon
 #     for h in range(6):  # h: [0,6)
 #         X = np.array(
-#             df_Xy[f"{X_name}_t-{h}"].to_numpy().reshape(-1).tolist()).reshape(
-#                 -1, 1)
+#             df_Xy[f"{X_name}_t-{h}"].to_numpy().reshape(-1).tolist())
 #         y = df_Xy[f'{y_name}'].to_numpy().reshape(-1)
 #         result = ML_evaluate(model, X, y, h=h)
 #         #  TODO provide description of the method here
@@ -135,6 +134,6 @@ def get_names():
 #     df_result["time"] = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
 #     df_result = df_result[['time', 'descriptions', 'h', 'mae', 'rmse', 'mape']]
 #     df_result.to_csv(f"{HOME}/results/experiment_results.csv",
-#                      mode="a",
+#                      mode="a+",
 #                      index=False,
 #                      header=False)

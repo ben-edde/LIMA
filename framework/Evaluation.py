@@ -68,7 +68,7 @@ def ML_evaluate(model, X, y, h):
             'mae': [mae.mean()],
             'rmse': [rmse.mean()],
             'mape': [mape.mean()],
-            'descriptions': msg
+            'descriptions': [msg]
         }
         return evaluation_result
     except Exception as e:
@@ -149,7 +149,7 @@ def TS_evaluate(model, y, h):
             'mae': [mae.mean()],
             'rmse': [rmse.mean()],
             'mape': [mape.mean()],
-            'descriptions': msg
+            'descriptions': [msg]
         }
         return evaluation_result
     except Exception as e:

@@ -12,6 +12,7 @@ from sklearn.linear_model import Ridge, SGDRegressor
 from sacred import Experiment
 from sacred.observers import FileStorageObserver
 
+HOME = os.environ['LIMA_HOME']
 exp = Experiment('Fasttext_embedding')
 exp.observers.append(FileStorageObserver('runs'))
 
@@ -65,9 +66,9 @@ def ML_evaluate(model, X, y, h):
         y: {y.shape}
         h= {h}
         Model: {model.__class__.__name__}
-        MAE = {mae.mean():.3f} +/- {mae.std():.3f}
-        RMSE = {rmse.mean():.3f} +/- {rmse.std():.3f}
-        MAPE = {mape.mean():.3f} +/- {mape.std():.3f}
+        MAE = {mae.mean():.6f} +/- {mae.std():.3f}
+        RMSE = {rmse.mean():.6f} +/- {rmse.std():.3f}
+        MAPE = {mape.mean():.6f} +/- {mape.std():.3f}
         """
         print(msg)
         logging.info(msg)
@@ -83,27 +84,51 @@ def ML_evaluate(model, X, y, h):
         logging.exception("EXCEPTION: %s", e, exc_info=True)
 
 
-@exp.automain
-def main():
-    HOME = os.environ['LIMA_HOME']
-    df_result = pd.DataFrame(
-        columns=['h', 'mae', 'rmse', 'mape', 'descriptions'])
-    df_news_price = pd.read_pickle(
+def get_data():
+    return pd.read_pickle(
         f"{HOME}/embedding/fasttext/WTI_Spot_n_RedditNews_2008-06-09_2016-07-01_fasttext.pkl"
     )
-    df_news_price = df_news_price[::-1]
-    X = np.array(df_news_price.News_fasttext.to_numpy().reshape(-1).tolist())
-    y = df_news_price.Price.to_numpy().reshape(-1)
 
-    for h in range(1, 6):
+
+def get_names():
+    return "News_fasttext", "Price"
+
+
+@exp.automain
+def main():
+
+    df_result = pd.DataFrame(
+        columns=['h', 'mae', 'rmse', 'mape', 'descriptions'])
+
+    df_Xy = get_data()
+    df_Xy = df_Xy[::-1].reset_index(drop=True)
+    X_name, y_name = get_names()
+    # prepare shifted feature for each forecast horizon
+    for h in range(6):  # h: [0,6)
+        df_Xy[f"{X_name}_t-{h}"] = df_Xy.shift(h)[X_name].to_numpy()
+    df_Xy.dropna(inplace=True)
+
+    # use prepared features for make forecast for each horizon
+    for h in range(6):  # h: [0,6)
+        X = np.array(
+            df_Xy[f"{X_name}_t-{h}"].to_numpy().reshape(-1).tolist())
+        y = df_Xy[f'{y_name}'].to_numpy().reshape(-1)
         result = ML_evaluate(LinearSVR(), X, y, h=h)
         result["descriptions"] = "fasttext SVR"
         df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
-    for h in range(1, 6):
+
+    for h in range(6):  # h: [0,6)
+        X = np.array(
+            df_Xy[f"{X_name}_t-{h}"].to_numpy().reshape(-1).tolist())
+        y = df_Xy[f'{y_name}'].to_numpy().reshape(-1)
         result = ML_evaluate(Ridge(), X, y, h=h)
         result["descriptions"] = "fasttext Ridge"
         df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
-    for h in range(1, 6):
+
+    for h in range(6):  # h: [0,6)
+        X = np.array(
+            df_Xy[f"{X_name}_t-{h}"].to_numpy().reshape(-1).tolist())
+        y = df_Xy[f'{y_name}'].to_numpy().reshape(-1)
         result = ML_evaluate(SGDRegressor(), X, y, h=h)
         result["descriptions"] = "fasttext SGDRegressor"
         df_result = df_result.append(pd.DataFrame(result), ignore_index=True)
