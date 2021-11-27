@@ -57,9 +57,9 @@ def ML_evaluate(model, X, y, h):
         y: {y.shape}
         h= {h}
         Model: {model.__class__.__name__}
-        MAE = {mae.mean():.3f} +/- {mae.std():.3f}
-        RMSE = {rmse.mean():.3f} +/- {rmse.std():.3f}
-        MAPE = {mape.mean():.3f} +/- {mape.std():.3f}
+        MAE = {mae.mean():.6f} +/- {mae.std():.3f}
+        RMSE = {rmse.mean():.6f} +/- {rmse.std():.3f}
+        MAPE = {mape.mean():.6f} +/- {mape.std():.3f}
         """
         print(msg)
         logging.info(msg)
