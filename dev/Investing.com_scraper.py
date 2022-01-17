@@ -53,7 +53,7 @@ def main():
             executable_path=f"{HOME}/dev/drivers/geckodriver", options=opts)
         file_name = "Investing.com_commodities-news.csv"
         file_destination = f"{HOME}/data/fresh/{file_name}"
-        for p in range(1, 2187):
+        for p in range(1, 3):
             for retry in range(5):
                 try:
                     driver.get(
