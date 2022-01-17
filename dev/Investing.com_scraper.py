@@ -19,14 +19,26 @@ HOME = os.environ['LIMA_HOME']
 
 
 def convert_time_str_to_dt(time_str):
-    # latest news
-    if 'ago' in time_str:
-        hours_to_shift = datetime.datetime.strptime(time_str,
-                                                    ' - %H hours ago').hour
-        return (datetime.datetime.utcnow() -
-                datetime.timedelta(hours=hours_to_shift)).date()
-    else:
-        return datetime.datetime.strptime(time_str, " - %b %d, %Y").date()
+    try:
+        # latest news
+        if 'ago' in time_str:
+            time_str=time_str[3:]
+            amount=int(time_str.split(' ')[0])
+            unit=time_str.split(' ')[1]
+            if unit in ["hour","hours"]:
+                return (datetime.datetime.utcnow() -
+                                datetime.timedelta(hours=amount)).date()
+            elif unit in ["minute","minutes"]:
+                return (datetime.datetime.utcnow() -
+                                datetime.timedelta(minutes=amount)).date()
+            elif unit in ["second","seconds"]:
+                return (datetime.datetime.utcnow() -
+                                datetime.timedelta(seconds=amount)).date()
+        else:
+            return datetime.datetime.strptime(time_str, " - %b %d, %Y").date()
+    except Exception as e:
+        logging.exception(f"convert_time_str_to_dt: {e}")
+        return datetime.datetime.utcnow().date()
 
 
 def main():
@@ -41,7 +53,7 @@ def main():
             executable_path=f"{HOME}/dev/drivers/geckodriver", options=opts)
         file_name = "Investing.com_commodities-news.csv"
         file_destination = f"{HOME}/data/fresh/{file_name}"
-        for p in range(1, 3):
+        for p in range(1, 2187):
             for retry in range(5):
                 try:
                     driver.get(
@@ -82,8 +94,8 @@ def main():
                                 )
                     break
                 except Exception as e:
-                    logging.exception(f"Investing.com scraper(p= {p}): {e}")
-                    print(f"Investing.com scraper(p= {p}; retry={retry}): {e}")
+                    logging.exception(f"Investing.com scraper(p= {p}; retry={retry}): {e}")
+                    logging.exception(f"results: {results}")
                     time.sleep(5)
         driver.close()
         logging.info("Investing.com scraper finished job.")
