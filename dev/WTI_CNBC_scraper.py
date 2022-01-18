@@ -86,7 +86,8 @@ def main():
                 write_api = client.write_api(write_options=SYNCHRONOUS)
                 write_api.write(bucket="dummy",
                                 record=df_p,
-                                data_frame_measurement_name="WTI")
+                                data_frame_measurement_name="WTI",
+                                data_frame_tag_columns=["type"])
                 client.close()
             except Exception as e:
                 logging.exception(f"WTI scraper writing to InfluxDB: {e}")
