@@ -56,6 +56,7 @@ def main():
                     all_results.append((label, closing_price))
                 except Exception as e:
                     logging.exception(f"WTI scraper on ({t+1}) time: {e}")
+                    driver.close()
                     time.sleep(5)
                     driver = webdriver.Firefox(
                         executable_path=f"{HOME}/dev/drivers/geckodriver",
@@ -94,6 +95,7 @@ def main():
             break
         except Exception as e:
             logging.exception(f"WTI scraper on ({t+1}) time: {e}")
+            driver.close()
             time.sleep(5)
 
 

@@ -75,6 +75,8 @@ def main():
                                for each in zip(date_text, articles, title_text)
                                ]
                     df = pd.DataFrame(results)
+                    if len(df)==0:
+                        continue
                     df.columns = ["Date", "ID", "News"]
                     df.Date = df.Date.map(convert_time_str_to_dt)
                     # df.to_csv(file_destination,
