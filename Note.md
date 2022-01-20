@@ -8,11 +8,8 @@ TODO: rolling window VS growing window
 TODO: use more features (30, 50, 100, ...)
 
 TODO: [FE] update GeoIdex with similarity approach
-TODO: [FE] apply more technical indicators (esp. rate of change)
 
-
-
-TODO: [FS] after shifting, select more features
+TODO: [FS] Decide number of features
 TODO: [FS] try to rely on tree based estimator for interpretable selection judgements
 TODO: [FS] apply stepwise with custom scoring
     * adjusted R^2
@@ -36,7 +33,7 @@ Model:
 ## Experiments
 
 ```
-[ ] feature extraction methods
+[X] feature extraction methods
     [X] Text: sentiment
         * subjectivity
     [X] Text: topic
@@ -49,29 +46,29 @@ Model:
             * max-mean-min is best for all model
         [X] sequence?
             * sequence is good
-    [ ] Text: event tuple vs event sequence
+    [X] Text: event tuple vs event sequence
         [X] single vs sequence
+            * sequence is good
         [X] separated VS packed
 [ ] feature selection methods
-    [ ] Filter:
+    [X] Filter:
         * Pearson’s r: r_regression 
         * f_regression
         * VarianceThreshold
-        * mutual_info_regression
+        * [O] mutual_info_regression
         * Absolute energy
         * Autocorrelation
-        * Entropy
+        * [O] Entropy
         * Slope
-        * Negative turning points
-        * Wavelet energy
-        * Wavelet entropy
-        * FFT mean coefficient
-    [ ] Wrapper
-        * RFE
-        * RFEcv
-        * SelectFromModel (using model like Lasso)
+    [X] Wrapper
+        * [O] RFE
+        * [O] RFEcv
+        * [O] SelectFromModel (Rdige, Lasso, DT)
         * Sequential Feature Selection (using model like Lasso)
-    [TBC] Embedded 
+    [X] decomposition
+        * PCA
+        * NMF
+    [X] Embedded 
         * LASSO
         * Random Forest
 [ ] model selection
@@ -123,4 +120,8 @@ Done: apply VAR (statsmodels) for lag order selection instead of using Granger
 
 ### emb sequence
 * better than single
+
+### scaling
+* scaling is fine, but the range should be large enough to represent feature (1-100 is better than 0.1-1)
+* seems scaling also help feature selection (esp entropy)
 ```
