@@ -33,6 +33,10 @@ Model:
 ## Experiments
 
 ```
+[ ] Data
+    * CO2 emission
+    * production
+    * Imports/exports
 [X] feature extraction methods
     [X] Text: sentiment
         * subjectivity
@@ -50,6 +54,9 @@ Model:
         [X] single vs sequence
             * sequence is good
         [X] separated VS packed
+    [ ] Text: Geopolitical index
+        [ ] similarity
+        [TBC] fuzzy membership
 [ ] feature selection methods
     [X] Filter:
         * Pearson’s r: r_regression 
@@ -60,10 +67,11 @@ Model:
         * Autocorrelation
         * [O] Entropy
         * Slope
+        [ ] catch22
     [X] Wrapper
         * [O] RFE
         * [O] RFEcv
-        * [O] SelectFromModel (Rdige, Lasso, DT)
+        * [O] SelectFromModel (Ridge, Lasso, DT)
         * Sequential Feature Selection (using model like Lasso)
     [X] decomposition
         * PCA
@@ -71,6 +79,14 @@ Model:
     [X] Embedded 
         * LASSO
         * Random Forest
+    [ ] Causality-based
+        * Granger
+        * akelleh/causality
+    [ ] Relief-based
+        * scikit-rebate
+    [ ] Genetic
+        * sklearn-genetic
+        * FeatureSelectionGA
 [ ] model selection
     [ ] linear models
         * LinearRegression
@@ -79,18 +95,20 @@ Model:
         * LinearSVR
         * decision tree
         * ARIMAX
-    [ ] *DL models
-        * RNN (+ Bidir)
-        * LSTM (+ Bidir)
-        * GRU (+ Bidir)
+    [X] *DL models        
+        [X] RNN (+ Bidir)
+        [X]  LSTM (+ Bidir)
+        [X]  GRU (+ Bidir)
+        [X]  ConvLSTM2D (+ Bidir)
+        [X]  multimodal  (CNN + GRU)
         * XGBOOST
         * NBEATS
         * Prophet
-        * multimodal  (CNN + GRU)
         * DeepAR
         * (TBC) Rocket
         * (TBC) TCN
-        * (TBC)  Temporal Fusion Transformers
+        * (TBC) Temporal Fusion Transformers
+        * (TBC) ES-RNN
 
 ```
 ## Idea
@@ -122,6 +140,17 @@ Done: apply VAR (statsmodels) for lag order selection instead of using Granger
 * better than single
 
 ### scaling
-* scaling is fine, but the range should be large enough to represent feature (1-100 is better than 0.1-1)
+* scaling is fine, but the range should be large enough to represent feature (1-100 is better than 0.1-1) //for y only
+* scaling X with (0,1) helps
+* 2 options: scaling y smaller then use mse; scaling y larger then use mae or mape
 * seems scaling also help feature selection (esp entropy)
+
+### RFE
+* good for Lasso (as long as scale b/w 0-1)
+* good for SVR (as long as scale b/w 0-1)
+* not good for Ridge
+
+### SelectFromModel
+* good for Ridge
+
 ```
