@@ -153,4 +153,9 @@ Done: apply VAR (statsmodels) for lag order selection instead of using Granger
 ### SelectFromModel
 * good for Ridge
 
+### loss func
+
+when scaling y: (1,100)
+msle (0.0005) ~= log_cosh (0.0002) ~= mape > huber ~= mae > mse >>> cos
+
 ```
