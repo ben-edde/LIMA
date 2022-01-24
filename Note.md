@@ -4,27 +4,17 @@
 
 ```
 
-TODO: rolling window VS growing window
 TODO: use more features (30, 50, 100, ...)
 
 TODO: [FE] update GeoIdex with similarity approach
 
 TODO: [FS] Decide number of features
 TODO: [FS] try to rely on tree based estimator for interpretable selection judgements
-TODO: [FS] apply stepwise with custom scoring
-    * adjusted R^2
-    * https://scikit-learn.org/stable/modules/model_evaluation.html#scoring
-    * https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.SequentialFeatureSelector.html
 
 Model:
 * discriminative
     TODO [Model] hybrid model: ARIMA + GRU/LSTM for linear and non-linearity
-    TODO [Model] multimodal
-        * Embedding: CNN
-            * event tuple: 300 * 3
-                * 3 channels, each for one of S,R,O // (3,1,300)
-                * OR reshape as 2D matrix of (300,3), then refer to handling image with CNN
-        * TS: GRU or none
+
 * generative(autoregressive)
     TODO [Model] DeepAR
     TODO [Model] TFT
@@ -33,8 +23,7 @@ Model:
 ## Experiments
 
 ```
-[ ] Data
-    * CO2 emission
+[~] Data
     * production
     * Imports/exports
 [X] feature extraction methods
@@ -158,4 +147,7 @@ Done: apply VAR (statsmodels) for lag order selection instead of using Granger
 when scaling y: (1,100)
 msle (0.0005) ~= log_cosh (0.0002) ~= mape > huber ~= mae > mse >>> cos
 
+### more data
+
+* using more news (world and econ) seems good for linear model but not DL although diff is not obvious.
 ```
