@@ -184,3 +184,37 @@ msle (0.0005) ~= log_cosh (0.0002) ~= mape > huber ~= mae > mse >>> cos
 * loss func must be paired with scale of y
 
 ```
+
+### To validate
+
+```
+[ ] TS features on DL
+    [ ] RNN
+    [ ] LSTM
+    [ ] GRU
+    [ ] CNN
+    [ ] MLP
+[ ] EMB features on DL
+    [ ] RNN
+    [ ] LSTM
+    [ ] GRU
+    [ ] CNN
+    [ ] MLP
+[ ] univariate TS models
+    [ ] RW
+    [ ] ARMA
+    [ ] ARIMA
+    [ ] STL
+    [ ] ExponentialSmoothing
+[ ] FS: RFE
+    [ ] Lasso
+    [ ] Ridge
+    [ ] DT
+[ ] FS: Stepwise
+    [ ] Lasso
+    [ ] Ridge
+    [ ] DT    
+[ ] FS: filter
+    [ ] Granger
+
+```
