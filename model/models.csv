@@ -1,0 +1,11 @@
+Feature, lag, FS, split, model, loss-opt, mae, rmse, mape, r2
+TSF; event emb; arma error, VAR lag 5, RFE Lasso 10;, 7:3, hybrid multimodal , log_cosh-adam(0.0002),0.6295715055752911,0.8151017733529718,0.011160847696560967,0.9907739177764847
+TSF; event emb; arma error, VAR lag 5, RFE Lasso 10;, cv(5), hybrid multimodal , log_cosh-adam(0.0002),0.818108, 1.063500, 0.013467, 0.976266
+,10,,7:3,ARMA,,0.8845066277438721,1.1902863245603703,0.015615412619380228,0.9803442647770879
+
+TSF; event emb; arma error, VAR lag 10, RFE Lasso 10;, 7:3, hybrid multimodal , log_cosh-adam(0.0002),0.5689672589854551,0.7660348173799888,0.010049764934289544,0.9918588937240486
+TSF; event emb; arma error, VAR lag 10, RFE Lasso 10;, cv(5), hybrid multimodal , log_cosh-adam(0.0002),0.785759, 1.019054, 0.012960, 0.977944
+
+,25,,7:3,ARMA,,0.8043019420341113,1.0654269524164146,0.01419589658476977,0.9842910578304847
+TSF; event emb; arma error, VAR lag 25, RFE Lasso 10;, 7:3, hybrid multimodal , log_cosh-adam(0.0002), 0.5065305012210035,0.6792732096929757,0.008987045025270743,0.993614593415159
+TSF; event emb; arma error, VAR lag 25, RFE Lasso 10;, cv(5), hybrid multimodal , log_cosh-adam(0.0002), 0.696514, 0.909021, 0.011487, 0.984841

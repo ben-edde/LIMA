@@ -197,7 +197,7 @@ X=X[:,trained_feature_selector.get_support()]
 y=trained_y_scaler.transform(y)
 
 from tensorflow.keras.optimizers import Adam
-opt = Adam(learning_rate=0.0001)
+opt = Adam(learning_rate=0.00001)
 trained_model.compile(loss='mse', optimizer=opt)
 history = trained_model.fit(X,
                     y,
