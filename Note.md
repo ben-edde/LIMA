@@ -4,20 +4,22 @@
 
 ```
 
-TODO: use more features (30, 50, 100, ...)
+Done: use more features (30, 50, 100, ...)
+    * more features may or may not help
+Done: [FE] update GeoIdex with similarity approach
 
-TODO: [FE] update GeoIdex with similarity approach
-
-TODO: [FS] Decide number of features
-TODO: [FS] try to rely on tree based estimator for interpretable selection judgements
+Done: [FS] Decide number of features
+    * 10/20
+Done: [FS] try to rely on tree based estimator for interpretable selection judgement
+    * no obvious advantage
 
 Model:
 * discriminative
-    TODO [Model] hybrid model: ARIMA + GRU/LSTM for linear and non-linearity
+    Done [Model] hybrid model: ARIMA + GRU/LSTM for linear and non-linearity
 
 * generative(autoregressive)
-    TODO [Model] DeepAR
-    TODO [Model] TFT
+    [~] [Model] DeepAR
+    [~] [Model] TFT
 ```
 
 ## Experiments
@@ -43,10 +45,10 @@ Model:
         [X] single vs sequence
             * sequence is good
         [X] separated VS packed
-    [ ] Text: Geopolitical index
-        [ ] similarity
+    [X] Text: Geopolitical index
+        [X] similarity
         [TBC] fuzzy membership
-[ ] feature selection methods
+[X] feature selection methods
     [X] Filter:
         * Pearson’s r: r_regression 
         * f_regression
@@ -56,7 +58,7 @@ Model:
         * Autocorrelation
         * [O] Entropy
         * Slope
-        [ ] catch22
+        [~] catch22
     [X] Wrapper
         * [O] RFE
         * [O] RFEcv
@@ -68,16 +70,16 @@ Model:
     [X] Embedded 
         * LASSO
         * Random Forest
-    [ ] Causality-based
+    [~] Causality-based
         * Granger
         * akelleh/causality
-    [ ] Relief-based
+    [~] Relief-based
         * scikit-rebate
-    [ ] Genetic
+    [~] Genetic
         * sklearn-genetic
         * FeatureSelectionGA
-[ ] model selection
-    [ ] linear models
+[X] model selection
+    [~] linear models
         * LinearRegression
         * Ridge
         * SGDRegressor
@@ -90,6 +92,7 @@ Model:
         [X]  GRU (+ Bidir)
         [X]  ConvLSTM2D (+ Bidir)
         [X]  multimodal  (CNN + GRU)
+        [X] hybrid (CNN + AMRA + GRU)
         * XGBOOST
         * NBEATS
         * Prophet
@@ -150,4 +153,34 @@ msle (0.0005) ~= log_cosh (0.0002) ~= mape > huber ~= mae > mse >>> cos
 ### more data
 
 * using more news (world and econ) seems good for linear model but not DL although diff is not obvious.
+
+### model training in CV
+* it seems model may not be updated properly in each round and weight sometimes preserved for next round. Need to compile model again.
+* alternatively, export model archi as json then load it in each round for safety
+
+### hybrid model
+* simply using predicted value of ARMA as features does not help
+* but its error does
+
+### embedding
+* it seems using event emb is better than simple emb
+
+### lag order
+* specific lag order for each type of features slightly better than general lag order for all
+* need to determine its influence on feature selection, whether to maintain a portion for each kind of features, or simply selecting from all
+
+### model archi
+* seems simple structures models with less layer and less neuron can perform as well as those with more complicated structure
+* Bidirectional layer is always good for local scope
+* for RNN-based models, internal dropout may not be good
+* when using multi-modal, adjusting ratio of neurons from different source matters
+
+### k-fold
+* don't do 10 folds, test set too small (<200 pt) for each round. 5-fold seems better (>300 pt as test set)
+
+### training
+* smaller batch size (40-50) is better than (>100).
+* smaller learning rate seems working well with small batch
+* loss func must be paired with scale of y
+
 ```
