@@ -1,11 +1,25 @@
 Feature, lag, FS, split, model, loss-opt, mae, rmse, mape, r2
-TSF; event emb; arma error, VAR lag 5, RFE Lasso 10;, 7:3, hybrid multimodal , log_cosh-adam(0.0002),0.6295715055752911,0.8151017733529718,0.011160847696560967,0.9907739177764847
-TSF; event emb; arma error, VAR lag 5, RFE Lasso 10;, cv(5), hybrid multimodal , log_cosh-adam(0.0002),0.818108, 1.063500, 0.013467, 0.976266
+TSF; event emb; arma error, VAR lag 5, RFE Lasso 10;, 7:3, CNN + BiGRU , log_cosh-adam(0.0002),0.6295715055752911,0.8151017733529718,0.011160847696560967,0.9907739177764847
+TSF; event emb; arma error, VAR lag 5, RFE Lasso 10;, cv(5), CNN + BiGRU , log_cosh-adam(0.0002),0.818108, 1.063500, 0.013467, 0.976266
+TSF; event emb; arma error, VAR lag 5, RFE Lasso 10;, cv(5), CNN^3 , log_cosh-adam(0.0002),0.731675, 0.950891, 0.012214, 0.981234
 ,10,,7:3,ARMA,,0.8845066277438721,1.1902863245603703,0.015615412619380228,0.9803442647770879
 
-TSF; event emb; arma error, VAR lag 10, RFE Lasso 10;, 7:3, hybrid multimodal , log_cosh-adam(0.0002),0.5689672589854551,0.7660348173799888,0.010049764934289544,0.9918588937240486
-TSF; event emb; arma error, VAR lag 10, RFE Lasso 10;, cv(5), hybrid multimodal , log_cosh-adam(0.0002),0.785759, 1.019054, 0.012960, 0.977944
+TSF; event emb; arma error, VAR lag 10, RFE Lasso 10;, 7:3, CNN + BiGRU , log_cosh-adam(0.0002),0.5689672589854551,0.7660348173799888,0.010049764934289544,0.9918588937240486
+TSF; event emb; arma error, VAR lag 10, RFE Lasso 10;, cv(5), CNN + BiGRU , log_cosh-adam(0.0002),0.785759, 1.019054, 0.012960, 0.977944
 
 ,25,,7:3,ARMA,,0.8043019420341113,1.0654269524164146,0.01419589658476977,0.9842910578304847
-TSF; event emb; arma error, VAR lag 25, RFE Lasso 10;, 7:3, hybrid multimodal , log_cosh-adam(0.0002), 0.5065305012210035,0.6792732096929757,0.008987045025270743,0.993614593415159
-TSF; event emb; arma error, VAR lag 25, RFE Lasso 10;, cv(5), hybrid multimodal , log_cosh-adam(0.0002), 0.696514, 0.909021, 0.011487, 0.984841
+TSF; event emb; arma error, VAR lag 25, RFE Lasso 10;, 7:3, CNN + BiGRU , log_cosh-adam(0.0002), 0.5065305012210035,0.6792732096929757,0.008987045025270743,0.993614593415159
+TSF; event emb; arma error, VAR lag 25, RFE Lasso 10;, cv(5), CNN + BiGRU , log_cosh-adam(0.0002), 0.696514, 0.909021, 0.011487, 0.984841
+
+###  TS features on DL
+
+TSF, lag 5, RFE Lasso 10, cv(5), GRU, mae-adam(0.001),4.839373, 4.979974, 0.075884, 0.393248
+
+TSF, lag 5, RFE Lasso 10, cv(5), RNN, mae-adam(0.001),4.902264, 5.041122, 0.077014, 0.379419
+
+TSF, lag 5, RFE Lasso 10, cv(5), LSTM, mae-adam(0.001),5.774036, 5.893528, 0.092375, 0.149481
+TSF, lag 5, RFE Lasso 10, cv(5), BiLSTM, mae-adam(0.001),3.053885, 3.261988, 0.043938, 0.706068
+TSF, lag 5, RFE Lasso 10, cv(5), BiRNN, mae-adam(0.001),2.362173, 2.601730, 0.032297, 0.783740
+TSF, lag 5, RFE Lasso 10, cv(5), BiGRU, mae-adam(0.001),2.305073, 2.546199, 0.031448, 0.789694
+TSF, lag 5, RFE Lasso 10, cv(5), MLP, mae-adam(0.001),1.627886, 1.906103, 0.023308, 0.871961
+TSF, lag 5, RFE Lasso 10, cv(5), CNN, mae-adam(0.001),0.993838, 1.277964, 0.016478, 0.963740
