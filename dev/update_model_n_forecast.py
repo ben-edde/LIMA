@@ -165,8 +165,8 @@ def get_topic_features(df, emb_scaler, lda_model):
     news_emb = df.News.apply(lambda x: fasttext_model.get_sentence_vector(
         (x))).to_numpy().tolist()
     news_emb = np.array(news_emb)
-    news_emb=emb_scaler.transform(news_emb)
-    topic= lda_model.transform(news_emb)
+    news_emb=emb_scaler.fit_transform(news_emb)
+    topic= lda_model.fit_transform(news_emb)
     for i in range(5):
         df[f"Topic{i+1}"] = topic[:, i]
     df_daily_averaged_topic = df.groupby(['Date']).mean()
@@ -192,9 +192,9 @@ for each in df_Xy.columns[:-1]:
 raw_X=df_Xy.to_numpy()[:,:-1]
 y=df_Xy.to_numpy()[:,-1].reshape(-1, 1)
 
-X=trained_X_scaler.transform(raw_X)
+X=trained_X_scaler.fit_transform(raw_X)
 X=X[:,trained_feature_selector.get_support()]
-y=trained_y_scaler.transform(y)
+y=trained_y_scaler.fit_transform(y)
 
 from tensorflow.keras.optimizers import Adam
 opt = Adam(learning_rate=0.00001)
@@ -243,6 +243,12 @@ from influxdb_client.client.write_api import SYNCHRONOUS,ASYNCHRONOUS
 client= InfluxDBClient.from_config_file(f"{HOME}/dev/DB/influxdb_config.ini")
 write_api=client.write_api(write_options=SYNCHRONOUS)
 write_api.write(bucket="dummy",record=df_inf, data_frame_measurement_name='WTI',data_frame_tag_columns=["h","type"])
+write_api.close()
 client.close()
 
+
 trained_model.save(f"{HOME}/dev/models/investing/GRU.model")
+joblib.dump(trained_X_scaler,f"{HOME}/dev/models/investing/feature_scaler(110).joblib")
+joblib.dump(trained_y_scaler,f"{HOME}/dev/models/investing/label_scaler(1).joblib")
+joblib.dump(trained_lda_model,f"{HOME}/dev/models/investing/lda_model.joblib")
+joblib.dump(trained_emb_scaler,f"{HOME}/dev/models/investing/emb_scaler.joblib")
