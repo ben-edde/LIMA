@@ -13,13 +13,17 @@ class PriceFeatureProvider(FeatureProvider):
     def __init__(self) -> None:
         pass
 
-    def get_raw_data(self):
+    def get_raw_data(self, mode):
+        if mode == "forecast":
+            since = "-50d"
+        else:
+            since = "2011-03-01"
         client = InfluxDBClient.from_config_file(
             f"{HOME}/dev/DB/influxdb_config.ini")
         query_api = client.query_api()
-        df_WTI = query_api.query_data_frame("""
+        df_WTI = query_api.query_data_frame(f"""
         from(bucket: "dummy")
-        |> range(start:2011-03-01, stop: -1d)
+        |> range(start:{since}, stop: now())
         |> filter(fn: (r) => r["_measurement"] == "WTI") 
         |> filter(fn: (r) => r["type"] == "closing_price") 
         |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
@@ -43,7 +47,7 @@ class PriceFeatureProvider(FeatureProvider):
         df_dt.index = df.index
         return df_dt
 
-    def get_feature(self):
-        df_WTI = self.get_raw_data().dropna()
+    def get_feature(self, mode):
+        df_WTI = self.get_raw_data(mode).dropna()
         df_dt = self.get_time_feature(df_WTI)
         return df_WTI, df_dt

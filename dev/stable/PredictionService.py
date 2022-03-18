@@ -56,9 +56,9 @@ class PredictionService:
                     f"{model_path}/label_scaler-3.joblib")
         joblib.dump(fe_service.feature_selector,
                     f"{model_path}/feature_selector.joblib")
-        joblib.dump(fe_service.news_feature_helper.lda_model,
+        joblib.dump(fe_service.strategy.news_feature_helper.lda_model,
                     f"{model_path}/lda_model.joblib")
-        joblib.dump(fe_service.news_feature_helper.emb_scaler,
+        joblib.dump(fe_service.strategy.news_feature_helper.emb_scaler,
                     f"{model_path}/emb_scaler.joblib")
 
     def predict(self):
@@ -76,8 +76,10 @@ class PredictionService:
         trained_emb_scaler = joblib.load(f"{model_path}/emb_scaler.joblib")
         fe_service = FeatureEngineeringService(
             ForecastFeatureEngineeringStrategy())
-        fe_service.news_feature_helper.set_emb_scaler(trained_emb_scaler)
-        fe_service.news_feature_helper.set_lda_model(trained_lda_model)
+        fe_service.strategy.news_feature_helper.set_emb_scaler(
+            trained_emb_scaler)
+        fe_service.strategy.news_feature_helper.set_lda_model(
+            trained_lda_model)
         fe_service.strategy.set_feature_selector(trained_feature_selector)
 
         feature, label = fe_service.get_feature()
@@ -100,6 +102,8 @@ class PredictionService:
         df_results = pd.DataFrame(pred_final,
                                   columns=["CLC1_forecast"],
                                   index=fe_service.idx)
+        # original idx is (t)th day, result should be (t+1)th day
+        df_results.index=df_results.index.map(lambda x: x+datetime.timedelta(days=1))
         return df_results
 
     def publish_db(self, df_results, window_size=20, mode="forecast"):

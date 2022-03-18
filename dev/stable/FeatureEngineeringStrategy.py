@@ -4,11 +4,16 @@ import pandas as pd
 from sklearn.feature_selection import RFE
 from sklearn.linear_model import Lasso
 from sklearn.preprocessing import MinMaxScaler
+from FeatureProviderFactory import FeatureProviderFactory
 
 
 class FeatureEngineeringStrategy:
     @abstractmethod
-    def feature_extraction(self, df_news_feature, df_price_feature, past, h):
+    def get_feature(self):
+        pass
+
+    @abstractmethod
+    def feature_extraction(self, past, h):
         pass
 
     @abstractmethod
@@ -42,9 +47,20 @@ class FeatureEngineeringStrategy:
 
 
 class ModelBuildingFeatureEngineeringStrategy(FeatureEngineeringStrategy):
-    def feature_extraction(self, df_news_feature, df_price_feature, df_dt,
-                           past, h):
-        df_Xy = pd.concat([df_news_feature, df_price_feature],
+    def __init__(self):
+        self.news_feature_helper = FeatureProviderFactory.get_provider("news")
+        self.price_feature_helper = FeatureProviderFactory.get_provider(
+            "price")
+        self.feature_selector = None
+
+    def get_feature(self):
+        self.df_news_feature = self.news_feature_helper.get_feature(
+            mode="build")
+        self.df_price_feature, self.df_dt = self.price_feature_helper.get_feature(
+            mode="build")
+    
+    def feature_extraction(self, past, h):
+        df_Xy = pd.concat([self.df_news_feature, self.df_price_feature],
                           axis=1,
                           join="inner")
         df_shifted = self.series_to_supervised(df_Xy.dropna(), past, h)
@@ -54,7 +70,7 @@ class ModelBuildingFeatureEngineeringStrategy(FeatureEngineeringStrategy):
             if "(t)" in each:
                 df_shifted.drop(each, axis=1, inplace=True)
         # add time feature without shift
-        self.df_shifted = pd.concat([df_dt, df_shifted], axis=1).dropna()
+        self.df_shifted = pd.concat([self.df_dt, df_shifted], axis=1).dropna()
         self.raw_X = self.df_shifted.to_numpy()[:, :-1]
         self.y = self.df_shifted.to_numpy()[:, -1].reshape(-1, 1)
         return self.raw_X, self.y, self.df_shifted.index
@@ -71,15 +87,23 @@ class ModelBuildingFeatureEngineeringStrategy(FeatureEngineeringStrategy):
 
 class ForecastFeatureEngineeringStrategy(FeatureEngineeringStrategy):
     def __init__(self):
+        self.news_feature_helper = FeatureProviderFactory.get_provider("news")
+        self.price_feature_helper = FeatureProviderFactory.get_provider(
+            "price")
         self.feature_selector = None
 
-    def feature_extraction(self, df_news_feature, df_price_feature, df_dt,
-                           past, h):
-        df_Xy = pd.concat([df_news_feature, df_price_feature],
+    def get_feature(self):
+        self.df_news_feature = self.news_feature_helper.get_feature(
+            mode="forecast")
+        self.df_price_feature, self.df_dt = self.price_feature_helper.get_feature(
+            mode="forecast")
+
+    def feature_extraction(self, past, h):
+        df_Xy = pd.concat([self.df_news_feature, self.df_price_feature],
                           axis=1,
                           join="inner")
         df_shifted = self.series_to_supervised(df_Xy, past - 1, 1)
-        self.df_shifted = pd.concat([df_dt, df_shifted], axis=1).dropna()
+        self.df_shifted = pd.concat([self.df_dt, df_shifted], axis=1).dropna()
         return self.df_shifted.to_numpy(), None, self.df_shifted.index
 
     def get_feature_selector(self):

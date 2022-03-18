@@ -30,15 +30,27 @@ class NewsFeatureProvider(FeatureProvider):
         self.emb_scaler = None
         self.lda_model = None
 
-    def get_raw_data(self):
+    def get_raw_data(self, mode):
+        if mode == "forecast":
+            since = datetime.datetime.now() - datetime.timedelta(days=50)
+            search_query = {
+                "News": {
+                    "$ne": "NEURONswap: First Dex To Implement Governance 2.0"
+                },
+                "Date": {
+                    "$gte": since
+                }
+            }
+        else:
+            search_query = {
+                "News": {
+                    "$ne": "NEURONswap: First Dex To Implement Governance 2.0"
+                }
+            }
         mongo_client = pymongo.MongoClient("mongodb://localhost:27017/")
         mongo_db = mongo_client["lima"]
         mongo_collection = mongo_db["investing_news"]
-        cursor = mongo_collection.find({
-            "News": {
-                "$ne": "NEURONswap: First Dex To Implement Governance 2.0"
-            }
-        })
+        cursor = mongo_collection.find(search_query)
         df_news = pd.DataFrame(list(cursor))[["Date", "News"]]
         return df_news
 
@@ -174,8 +186,8 @@ class NewsFeatureProvider(FeatureProvider):
         df_result.columns = [f"Decay_{each}" for each in df.columns]
         return df_result
 
-    def get_feature(self):
-        df_news = self.get_raw_data()
+    def get_feature(self, mode):
+        df_news = self.get_raw_data(mode)
         df_news = self.clean_news(df_news)
 
         # sentiment features
