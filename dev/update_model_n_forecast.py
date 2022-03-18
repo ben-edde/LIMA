@@ -236,7 +236,7 @@ def shift_weekend(x):
 df_inf.index=df_inf.index.map(shift_weekend)
 df_inf.columns=["CLC1"]
 df_inf["h"]=1
-df_inf["type"]="forecast"
+df_inf["type"]="forecast_o"
 
 
 from influxdb_client.client.write_api import SYNCHRONOUS,ASYNCHRONOUS
