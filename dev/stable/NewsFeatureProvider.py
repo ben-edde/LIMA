@@ -1,22 +1,23 @@
 import datetime
 import logging
 import os
-import numpy as np
-import pandas as pd
-from sklearn.preprocessing import MinMaxScaler
-import joblib
-import pymongo
 import random
 import string
+
 import fasttext
-from nltk.tokenize import word_tokenize
+import joblib
+import numpy as np
+import pandas as pd
+import pymongo
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 from nltk.tag import pos_tag
+from nltk.tokenize import word_tokenize
+from scipy import spatial
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.preprocessing import MinMaxScaler
 from textblob import TextBlob
-from scipy import spatial
+
 from FeatureProvider import FeatureProvider
 
 HOME = os.environ['LIMA_HOME']

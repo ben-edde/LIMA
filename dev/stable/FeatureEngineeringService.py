@@ -1,18 +1,4 @@
-from sklearn.feature_selection import mutual_info_regression, RFE, RFECV, SelectFromModel, SequentialFeatureSelector, chi2, SelectKBest, f_regression, VarianceThreshold, r_regression
-from sklearn.linear_model import Ridge, Lasso
-from sklearn.tree import DecisionTreeRegressor, ExtraTreeRegressor
-from sklearn.svm import LinearSVR, SVR
-from sklearn.feature_selection import RFE
-from sklearn.linear_model import Ridge, Lasso
 from FeatureProviderFactory import FeatureProviderFactory
-import os
-import numpy as np
-import pandas as pd
-from matplotlib import pyplot
-from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import cross_validate, TimeSeriesSplit
-from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, mean_squared_error
-from sklearn.metrics import r2_score
 
 
 class FeatureEngineeringService:
@@ -28,6 +14,7 @@ class FeatureEngineeringService:
         self.df_shifted = None
         self.feature_selector = None
         self.strategy = strategy
+        self.idx = None
 
     def get_feature(self):
         df_news_feature = self.news_feature_helper.get_feature()

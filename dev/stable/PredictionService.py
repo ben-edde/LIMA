@@ -36,8 +36,9 @@ class PredictionService:
         lin_model.train()
         pred_linear_y = lin_model.predict(dataset.feature)
 
-        non_linear_y = dataset.label - pred_linear_y.reshape(y.shape)
-        nonlinear_data = Dataset(X=fe_service.X,
+        non_linear_y = dataset.label - pred_linear_y.reshape(
+            dataset.label.shape)
+        nonlinear_data = Dataset(X=feature,
                                  y=non_linear_y,
                                  idx=fe_service.idx,
                                  scaling=True)
@@ -50,9 +51,9 @@ class PredictionService:
         nonlin_model.model.save(f"{model_path}/nonlinear.model")
         joblib.dump(lin_model.model, f"{model_path}/lin_model.joblib")
         joblib.dump(nonlin_model.dataset.feature_scaler,
-                    f"{model_path}/feature_scaler(10).joblib")
+                    f"{model_path}/feature_scaler-10.joblib")
         joblib.dump(nonlin_model.dataset.label_scaler,
-                    f"{model_path}/label_scaler(3).joblib")
+                    f"{model_path}/label_scaler-3.joblib")
         joblib.dump(fe_service.feature_selector,
                     f"{model_path}/feature_selector.joblib")
         joblib.dump(fe_service.news_feature_helper.lda_model,
@@ -66,9 +67,9 @@ class PredictionService:
             f"{model_path}/nonlinear.model")
         trained_lin_model = joblib.load(f"{model_path}/lin_model.joblib")
         trained_feature_scaler = joblib.load(
-            f"{model_path}/feature_scaler(10).joblib")
+            f"{model_path}/feature_scaler-10.joblib")
         trained_label_scaler = joblib.load(
-            f"{model_path}/label_scaler(3).joblib")
+            f"{model_path}/label_scaler-3.joblib")
         trained_feature_selector = joblib.load(
             f"{model_path}/feature_selector.joblib")
         trained_lda_model = joblib.load(f"{model_path}/lda_model.joblib")
@@ -125,3 +126,12 @@ class PredictionService:
                         data_frame_tag_columns=["h", "type"])
         write_api.close()
         client.close()
+
+
+def main():
+    prediction_service = PredictionService()
+    prediction_service.build_model()
+
+
+if __name__ == "__main__":
+    main()

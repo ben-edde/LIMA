@@ -1,4 +1,4 @@
-from sklearn.linear_model import LinearRegression, Lasso, Ridge
+from sklearn.linear_model import Lasso, LinearRegression, Ridge
 
 
 class LinearModelFactory:

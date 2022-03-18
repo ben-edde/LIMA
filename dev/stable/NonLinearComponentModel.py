@@ -1,24 +1,18 @@
 import os
 import random
-from keras.layers import Reshape, MaxPooling2D, Bidirectional, ConvLSTM2D
-from matplotlib import pyplot
+
 import numpy as np
 import tensorflow as tf
-from tensorflow import keras
-from keras.models import Sequential
-from keras.layers import Dense
-from keras.layers import LSTM
-from keras.layers import GRU
-from keras.layers import SimpleRNN
-from keras.layers import Conv2D, Conv3D, Conv1D
-from keras.layers import Dropout
-from keras.layers import Input
-from keras.layers import Flatten
-from keras.models import Model
+from keras.layers import (GRU, LSTM, Bidirectional, Conv1D, Conv2D, Conv3D,
+                          ConvLSTM2D, Dense, Dropout, Flatten, Input,
+                          MaxPooling2D, Reshape, SimpleRNN)
 from keras.layers.merge import concatenate
-from tensorflow.keras.optimizers import Adam
+from keras.models import Model, Sequential
+from matplotlib import pyplot
 from statsmodels.tsa.seasonal import STL
 from statsmodels.tsa.stattools import adfuller
+from tensorflow import keras
+from tensorflow.keras.optimizers import Adam
 
 # set random seed
 seed_value = 42
@@ -69,20 +63,20 @@ class NonLinearComponentModel:
         return feature, label, diff_order
 
     def set_model(self, model_name):
-        self.model = self.compose_model(self.dataset.feature.shape[-1],
-                                        self.dataset.label.shape[-1])
+        self.model = self.compose_model(self.dataset.train_X.shape[-1],
+                                        self.dataset.train_y.shape[-1])
 
     def train(self):
         self.prepare_env()
-        history = self.model.fit(self.dataset.feature,
-                                 self.dataset.label,
+        history = self.model.fit(self.dataset.train_X,
+                                 self.dataset.train_y,
                                  epochs=200,
                                  batch_size=40,
                                  verbose=1,
                                  shuffle=False)
-        pyplot.plot(history.history['loss'], label='train')
-        pyplot.legend()
-        pyplot.show()
+        # pyplot.plot(history.history['loss'], label='train')
+        # pyplot.legend()
+        # pyplot.show()
 
     def predict(self, feature):
         return self.model.predict(feature)
