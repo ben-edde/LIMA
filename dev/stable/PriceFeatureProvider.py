@@ -8,7 +8,6 @@ HOME = os.environ['LIMA_HOME']
 
 
 class PriceFeatureProvider(FeatureProvider):
-    
     def __init__(self) -> None:
         pass
 
@@ -31,18 +30,18 @@ class PriceFeatureProvider(FeatureProvider):
         df_WTI.index = pd.to_datetime(df_WTI.index)
         return df_WTI
 
-    def get_time_feature(self,df):
-        month=[each.month for each in df.index]
-        day=[each.day for each in df.index]
-        day_in_week=[each.weekday() for each in df.index]
-        df_dt=pd.DataFrame()
-        df_dt["month"]=month
-        df_dt["day"]=day
-        df_dt["day_in_week"]=day_in_week
-        df_dt.index=df.index
+    def get_time_feature(self, df):
+        month = [each.month for each in df.index]
+        day = [each.day for each in df.index]
+        day_in_week = [each.weekday() for each in df.index]
+        df_dt = pd.DataFrame()
+        df_dt["month"] = month
+        df_dt["day"] = day
+        df_dt["day_in_week"] = day_in_week
+        df_dt.index = df.index
         return df_dt
 
     def get_feature(self):
-        df_WTI=self.get_raw_data().dropna()
-        df_dt=self.get_time_feature(df_WTI)
-        return df_WTI,df_dt
+        df_WTI = self.get_raw_data().dropna()
+        df_dt = self.get_time_feature(df_WTI)
+        return df_WTI, df_dt

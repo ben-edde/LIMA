@@ -1,20 +1,18 @@
-from sklearn.svm import SVR, LinearSVR
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.kernel_ridge import KernelRidge
-from sklearn.linear_model import LinearRegression, ARDRegression, SGDRegressor, ElasticNet, Lars, Lasso, GammaRegressor, TweedieRegressor, PoissonRegressor, Ridge, BayesianRidge
-from sklearn.ensemble import AdaBoostRegressor,RandomForestRegressor
+from LinearModelFactory import LinearModelFactory
 
 
 class LinearComponentModel:
-    def __init__(self) -> None:
-        self.train_X=None
-        self.train_y=None
-        self.model=None
-    def main(self):
-        X_scaler = MinMaxScaler()
-        X_scaler.fit(train_X)
-        train_X=X_scaler.transform(train_X) 
-        lin_model=LinearRegression()
-        lin_model.fit(train_X,train_y.ravel())
-        # linear_y=lin_model.predict(train_X)
-        self.model=lin_model
+    def __init__(self, dataset) -> None:
+        self.dataset = dataset
+        self.model = None
+
+    def set_model(self, model_name="LR"):
+        self.model = LinearModelFactory.get_model(model_name)
+
+    def train(self):
+        train_X = self.dataset.train_X
+        train_y = self.dataset.train_y.ravel()
+        self.model.fit(train_X, train_y)
+
+    def predict(self, feature):
+        return self.model.predict(feature)

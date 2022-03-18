@@ -87,6 +87,23 @@ class NewsFeatureProvider(FeatureProvider):
         df.News = df.News.apply(lambda r: " ".join(self.clean_text(r)))
         return df
 
+    def set_emb_scaler(self, emb_scaler):
+        self.emb_scaler = emb_scaler
+
+    def get_emb_scaler(self):
+        if self.emb_scaler is None:
+            self.emb_scaler = MinMaxScaler()
+        return self.emb_scaler
+
+    def set_lda_model(self, lda_model):
+        self.lda_model = lda_model
+
+    def get_lda_model(self):
+        if self.lda_model is None:
+            self.lda_model = LatentDirichletAllocation(n_components=5,
+                                                       n_jobs=-1)
+        return self.lda_model
+
     def get_sentiment_aggregated(self, df):
         df = df.copy()
         df["Polarity"] = df.apply(
@@ -101,10 +118,10 @@ class NewsFeatureProvider(FeatureProvider):
         news_emb = df.News.apply(lambda x: self.fasttext_model.
                                  get_sentence_vector((x))).to_numpy().tolist()
         news_emb = np.array(news_emb)
-        self.emb_scaler = MinMaxScaler()
-        news_emb = self.emb_scaler.fit_transform(news_emb)
-        self.lda_model = LatentDirichletAllocation(n_components=5, n_jobs=-1)
-        topic = self.lda_model.fit_transform(news_emb)
+        emb_scaler = self.get_emb_scaler()
+        news_emb = emb_scaler.fit_transform(news_emb)
+        lda_model = self.get_lda_model()
+        topic = lda_model.fit_transform(news_emb)
         for i in range(5):
             df[f"Topic{i+1}"] = topic[:, i]
         df_daily_averaged_topic = df.groupby(['Date']).mean()
