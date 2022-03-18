@@ -1,51 +1,127 @@
+import datetime
+import os
+import random
+
+import joblib
+import numpy as np
+import tensorflow as tf
+from influxdb_client import InfluxDBClient
+from influxdb_client.client.write_api import SYNCHRONOUS
+from tensorflow import keras
+
+from Dataset import Dataset
+from FeatureEngineeringService import FeatureEngineeringService
+from FeatureEngineeringStrategy import *
+from LinearComponentModel import LinearComponentModel
+from NonLinearComponentModel import NonLinearComponentModel
+
+HOME = os.environ['LIMA_HOME']
+# set random seed
+seed_value = 42
+os.environ['PYTHONHASHSEED'] = str(seed_value)
+random.seed(seed_value)
+np.random.seed(seed_value)
+tf.random.set_seed(seed_value)
+
+
 class PredictionService:
-
     def build_model(self):
-        fe_service=FeatureEngineeringService(mode="build")
-        fe_service.feature_extraction(mode="build")
-        fe_service.feature_selection(mode="build")
-        dataset=Dataset(X=fe_service.X,y=fe_service.y)
+        fe_service = FeatureEngineeringService(
+            ModelBuildingFeatureEngineeringStrategy())
+        feature, label = fe_service.get_feature()
+        dataset = Dataset(X=feature, y=label, idx=fe_service.idx)
 
-        lin_model=LinearComponentModel(dataset)
+        lin_model = LinearComponentModel(dataset)
         lin_model.set_model("LR")
         lin_model.train()
-        pred_linear_y=lin_model.predict(data.feature)
+        pred_linear_y = lin_model.predict(dataset.feature)
 
-        non_linear_y=dataset.label-pred_linear_y.reshape(y.shape)
-        nonlinear_data=Dataset(X=fe_service.X,y=non_linear_y,scaling=True)
+        non_linear_y = dataset.label - pred_linear_y.reshape(y.shape)
+        nonlinear_data = Dataset(X=fe_service.X,
+                                 y=non_linear_y,
+                                 idx=fe_service.idx,
+                                 scaling=True)
 
-        nonlin_model=NonLinearComponentModel(nonlinear_data)
+        nonlin_model = NonLinearComponentModel(nonlinear_data)
         nonlin_model.set_model("BiGRU")
         nonlin_model.train()
 
-        nonlin_model.model.save(f"{HOME}/dev/models/investing/GRU.model")
-        joblib.dump(nonlinear_data.feature_scaler, f"{HOME}/dev/models/investing/feature_scaler.joblib")
-        joblib.dump(nonlinear_data.label_scaler, f"{HOME}/dev/models/investing/label_scaler.joblib")
-        joblib.dump(fe_service.feature_selector, f"{HOME}/dev/models/investing/feature_selector.joblib")
-        joblib.dump(fe_service.news_feature_helper.lda_model, f"{HOME}/dev/models/investing/lda_model.joblib")
-        joblib.dump(fe_service.news_feature_helper.emb_scaler, f"{HOME}/dev/models/investing/emb_scaler.joblib")
-    
+        model_path = f"{HOME}/dev/stable/models"
+        nonlin_model.model.save(f"{model_path}/nonlinear.model")
+        joblib.dump(lin_model.model, f"{model_path}/lin_model.joblib")
+        joblib.dump(nonlin_model.dataset.feature_scaler,
+                    f"{model_path}/feature_scaler(10).joblib")
+        joblib.dump(nonlin_model.dataset.label_scaler,
+                    f"{model_path}/label_scaler(3).joblib")
+        joblib.dump(fe_service.feature_selector,
+                    f"{model_path}/feature_selector.joblib")
+        joblib.dump(fe_service.news_feature_helper.lda_model,
+                    f"{model_path}/lda_model.joblib")
+        joblib.dump(fe_service.news_feature_helper.emb_scaler,
+                    f"{model_path}/emb_scaler.joblib")
+
     def predict(self):
-        # TODO update forecast mode
-        fe_service=FeatureEngineeringService(mode="forecast")
-        fe_service.feature_extraction(mode="forecast")
-        fe_service.feature_selection(mode="forecast")
+        model_path = f"{HOME}/dev/stable/models"
+        trained_nonlin_model = keras.models.load_model(
+            f"{model_path}/nonlinear.model")
+        trained_lin_model = joblib.load(f"{model_path}/lin_model.joblib")
+        trained_feature_scaler = joblib.load(
+            f"{model_path}/feature_scaler(10).joblib")
+        trained_label_scaler = joblib.load(
+            f"{model_path}/label_scaler(3).joblib")
+        trained_feature_selector = joblib.load(
+            f"{model_path}/feature_selector.joblib")
+        trained_lda_model = joblib.load(f"{model_path}/lda_model.joblib")
+        trained_emb_scaler = joblib.load(f"{model_path}/emb_scaler.joblib")
+        fe_service = FeatureEngineeringService(
+            ForecastFeatureEngineeringStrategy())
+        fe_service.news_feature_helper.set_emb_scaler(trained_emb_scaler)
+        fe_service.news_feature_helper.set_lda_model(trained_lda_model)
+        fe_service.strategy.set_feature_selector(trained_feature_selector)
 
-        df_inf=pd.DataFrame(inverted_inf_y,columns=["CLC1_forecast"])
-        df_inf.index=df_inf_original_price.index
-        df_inf.index=df_inf.index.map(lambda x: datetime.datetime.combine(x,datetime.time(22,0)))
+        feature, label = fe_service.get_feature()
+
+        dataset = Dataset(X=feature,
+                          y=None,
+                          idx=fe_service.idx,
+                          scaling=True,
+                          feature_scaler=trained_feature_scaler,
+                          label_scaler=trained_label_scaler)
+        pred_linear_y = trained_lin_model.predict(dataset.feature)
+        pred_nonlinear_y = trained_nonlin_model.predict(
+            dataset.train_X)  # normalized
+        inverted_pred_nonlinear_y = dataset.label_scaler.inverse_transform(
+            pred_nonlinear_y)
+        pred_combined_nonlinear_y = pd.DataFrame(
+            inverted_pred_nonlinear_y).apply(lambda x: x.sum(),
+                                             axis=1).to_numpy().reshape(-1, 1)
+        pred_final = pred_combined_nonlinear_y.ravel() + pred_linear_y.ravel()
+        df_results = pd.DataFrame(pred_final,
+                                  columns=["CLC1_forecast"],
+                                  index=fe_service.idx)
+        return df_results
+
+    def publish_db(self, df_results, window_size=20, mode="forecast"):
         def shift_weekend(x):
-            if x.weekday()in [5,6]:
-                x=x+datetime.timedelta(days=7-x.weekday())
+            if x.weekday() in [5, 6]:
+                x = x + datetime.timedelta(days=7 - x.weekday())
             return x
-        df_inf.index=df_inf.index.map(shift_weekend)
-        df_inf.columns=["CLC1"]
-        df_inf["h"]=1
-        df_inf["type"]="forecast"
 
-        from influxdb_client.client.write_api import SYNCHRONOUS
-        client= InfluxDBClient.from_config_file(f"{HOME}/dev/DB/influxdb_config.ini")
-        write_api=client.write_api(write_options=SYNCHRONOUS)
-        write_api.write(bucket="dummy",record=df_inf, data_frame_measurement_name='WTI',data_frame_tag_columns=["h","type"])
+        if len(df_results) > window_size:
+            df_results = df_results.iloc[-window_size:]
+        df_results.index = df_results.index.map(
+            lambda x: datetime.datetime.combine(x, datetime.time(22, 0)))
+        df_results.index = df_results.index.map(shift_weekend)
+        df_results.columns = ["CLC1"]
+        df_results["h"] = 1
+        df_results["type"] = mode
+
+        client = InfluxDBClient.from_config_file(
+            f"{HOME}/dev/DB/influxdb_config.ini")
+        write_api = client.write_api(write_options=SYNCHRONOUS)
+        write_api.write(bucket="dummy",
+                        record=df_results,
+                        data_frame_measurement_name='WTI',
+                        data_frame_tag_columns=["h", "type"])
         write_api.close()
         client.close()

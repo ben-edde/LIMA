@@ -3,13 +3,22 @@ from sklearn.preprocessing import MinMaxScaler
 
 
 class Dataset:
-    def __init__(self, X=None, y=None, idx=None, train_ratio=1, scaling=False):
+    def __init__(self,
+                 X=None,
+                 y=None,
+                 idx=None,
+                 train_ratio=1,
+                 scaling=False,
+                 feature_scaler=None,
+                 label_scaler=None):
         self.feature = X
         self.label = y
         self.train_ratio = train_ratio
         self.scaling = scaling
-        self.update()
         self.idx = idx
+        self.feature_scaler = feature_scaler
+        self.label_scaler = label_scaler
+        self.update()
 
     def set_train_ratio(self, train_ratio):
         self.train_ratio = train_ratio
