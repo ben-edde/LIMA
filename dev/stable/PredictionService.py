@@ -134,8 +134,9 @@ class PredictionService:
 
 def main():
     prediction_service = PredictionService()
-    prediction_service.build_model()
-
+    # prediction_service.build_model()
+    df=prediction_service.predict()
+    prediction_service.publish_db(df)
 
 if __name__ == "__main__":
     main()
