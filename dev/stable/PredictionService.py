@@ -103,9 +103,58 @@ class PredictionService:
                                   columns=["CLC1_forecast"],
                                   index=fe_service.idx)
         # original idx is (t)th day, result should be (t+1)th day
-        df_results.index=df_results.index.map(lambda x: x+datetime.timedelta(days=1))
+        df_results.index = df_results.index.map(
+            lambda x: x + datetime.timedelta(days=1))
         return df_results
 
+    def get_prev_prediction(self, window_start=10, window_end=0):
+        since = f"-{window_start}d"
+        if window_end == 0:
+            till = "now()"
+        else:
+            till = f"{window_end}d"
+        client = InfluxDBClient.from_config_file(
+            f"{HOME}/dev/DB/influxdb_config.ini")
+        query_api = client.query_api()
+        df_prev_pred = query_api.query_data_frame(f"""
+        from(bucket: "dummy")
+        |> range(start:{since}, stop: {till})
+        |> filter(fn: (r) => r["_measurement"] == "WTI") 
+        |> filter(fn: (r) => r["type"] == "forecast") 
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> drop(columns: ["_start", "_stop"])
+        """)
+        df_prev_pred = df_prev_pred[["_time", "CLC1"]]
+        df_prev_pred.columns = ["Date", "CLC1_forecast"]
+        df_prev_pred.set_index("Date", inplace=True)
+        df_prev_pred.index = df_prev_pred.index.map(lambda each: each.date())
+        df_prev_pred.index = pd.to_datetime(df_prev_pred.index)
+        return df_prev_pred
+    
+    def get_hist_quote(self, window_start=10, window_end=0):
+        since = f"-{window_start}d"
+        if window_end == 0:
+            till = "now()"
+        else:
+            till = f"{window_end}d"
+        client = InfluxDBClient.from_config_file(
+            f"{HOME}/dev/DB/influxdb_config.ini")
+        query_api = client.query_api()
+        df_WTI = query_api.query_data_frame(f"""
+        from(bucket: "dummy")
+        |> range(start:{since}, stop: {till})
+        |> filter(fn: (r) => r["_measurement"] == "WTI") 
+        |> filter(fn: (r) => r["type"] == "closing_price") 
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> drop(columns: ["_start", "_stop"])
+        """)
+        df_WTI = df_WTI[["_time", "CLC4", "CLC3", "CLC2", "CLC1"]]
+        df_WTI.columns = ["Date", "CLC4", "CLC3", "CLC2", "CLC1"]
+        df_WTI.set_index("Date", inplace=True)
+        df_WTI.index = df_WTI.index.map(lambda each: each.date())
+        df_WTI.index = pd.to_datetime(df_WTI.index)
+        return df_WTI
+    
     def publish_db(self, df_results, window_size=20, mode="forecast"):
         def shift_weekend(x):
             if x.weekday() in [5, 6]:
@@ -114,9 +163,15 @@ class PredictionService:
 
         if len(df_results) > window_size:
             df_results = df_results.iloc[-window_size:]
+
+        df_results.index = df_results.index.map(shift_weekend)
+
+        # don't override previous prediction
+        df_prev_pred = self.get_prev_prediction()
+        df_results = df_results[np.invert(
+            df_results.index.isin(df_prev_pred.index))]
         df_results.index = df_results.index.map(
             lambda x: datetime.datetime.combine(x, datetime.time(22, 0)))
-        df_results.index = df_results.index.map(shift_weekend)
         df_results.columns = ["CLC1"]
         df_results["h"] = 1
         df_results["type"] = mode
@@ -135,8 +190,9 @@ class PredictionService:
 def main():
     prediction_service = PredictionService()
     # prediction_service.build_model()
-    df=prediction_service.predict()
+    df = prediction_service.predict()
     prediction_service.publish_db(df)
+
 
 if __name__ == "__main__":
     main()
