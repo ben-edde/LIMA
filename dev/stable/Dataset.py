@@ -1,6 +1,7 @@
 from sklearn.model_selection import TimeSeriesSplit, cross_validate
 from sklearn.preprocessing import MinMaxScaler
 
+
 class Dataset:
     def __init__(self,
                  X=None,
@@ -19,8 +20,10 @@ class Dataset:
         self.label_scaler = label_scaler
         self.train_X = None
         self.train_y = None
+        self.train_idx = None
         self.test_X = None
         self.test_y = None
+        self.test_idx = None
         self.update()
 
     def set_train_ratio(self, train_ratio):
@@ -32,6 +35,8 @@ class Dataset:
         train_size = int(self.length * self.train_ratio)
         self.train_X = self.feature[:train_size]
         self.test_X = self.feature[train_size:]
+        self.train_idx = self.idx[:train_size]
+        self.test_idx = self.idx[train_size:]
         if not self.label is None:
             self.train_y = self.label[:train_size]
             self.test_y = self.label[train_size:]
