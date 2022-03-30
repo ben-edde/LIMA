@@ -1,7 +1,8 @@
 from LinearModelFactory import LinearModelFactory
+from ComponentModel import ComponentModel
 
 
-class LinearComponentModel:
+class LinearComponentModel(ComponentModel):
     def __init__(self, dataset) -> None:
         self.dataset = dataset
         self.model = None

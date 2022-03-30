@@ -7,6 +7,7 @@ from matplotlib import pyplot
 from statsmodels.tsa.seasonal import STL
 from statsmodels.tsa.stattools import adfuller
 
+from ComponentModel import ComponentModel
 from NonLinearModelFactory import NonLinearModelFactory
 
 # set random seed
@@ -20,7 +21,7 @@ physical_devices = tf.config.list_physical_devices('GPU')
 tf.config.experimental.set_memory_growth(physical_devices[0], True)
 
 
-class NonLinearComponentModel:
+class NonLinearComponentModel(ComponentModel):
     def __init__(self, dataset) -> None:
         self.dataset = dataset
         self.model = None
